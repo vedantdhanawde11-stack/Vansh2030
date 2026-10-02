@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#0F172A">
+  <title>Vansh 2030 • Couple Games Arcade 🎮❤️</title>
+
+  <!-- Google Fonts & Material Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --app-bg: #0F172A;
+      --card-bg: #1E293B;
+      --border-subtle: #334155;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+
+      --mr-color: #38BDF8;
+      --mr-grad: linear-gradient(135deg, #0284C7, #38BDF8);
+      --mrs-color: #FB7185;
+      --mrs-grad: linear-gradient(135deg, #E11D48, #FB7185);
+
+      --gold-grad: linear-gradient(135deg, #F59E0B, #FBBF24);
+      --rose-grad: linear-gradient(135deg, #BE123C, #FB7185);
+      --purple-grad: linear-gradient(135deg, #7C3AED, #A855F7);
+
+      --shadow-3d: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --shadow-pop: 0 20px 30px -10px rgba(225, 29, 72, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1E1B4B 0%, #0F172A 100%);
+      color: var(--text-main);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 10px 40px;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-3d);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .back-btn {
+      background: #334155;
+      border: 1px solid #475569;
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .back-btn:active { transform: scale(0.92); }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-tag {
+      font-size: 10px;
+      font-weight: 800;
+      background: var(--rose-grad);
+      color: white;
+      padding: 2px 7px;
+      border-radius: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    /* 5-Game Tabs Selector */
+    .games-nav-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px;
+      scrollbar-width: none;
+    }
+    .games-nav-scroll::-webkit-scrollbar { display: none; }
+    .game-tab-pill {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .game-tab-pill.active {
+      background: var(--rose-grad);
+      color: white;
+      border-color: #FB7185;
+      box-shadow: 0 4px 15px rgba(225, 29, 72, 0.35);
+      transform: translateY(-2px);
+    }
+
+    /* Game View Section */
+    .game-view-panel {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeIn 0.25s ease;
+    }
+    .game-view-panel.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Glass Cards */
+    .glass-card {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: var(--shadow-3d);
+    }
+
+    /* Buttons */
+    .btn-gradient {
+      background: var(--rose-grad);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(225, 29, 72, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-gradient:active { transform: scale(0.97); }
+
+    /* ==========================================================================
+       GAME 1: INTIMATE JOURNEY STYLES
+       ========================================================================== */
+    .selector-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .select-tile-btn {
+      background: rgba(15, 23, 42, 0.6);
+      border: 2px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: white;
+    }
+    .select-tile-btn.selected {
+      border-color: #E11D48;
+      background: rgba(225, 29, 72, 0.18);
+      box-shadow: 0 0 14px rgba(225, 29, 72, 0.35);
+      transform: translateY(-2px);
+    }
+    .tile-count { font-size: 22px; font-weight: 900; color: #FDA4AF; }
+    .tile-desc { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-align: center; }
+
+    .board-container {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 10px;
+      max-height: 48dvh;
+      overflow-y: auto;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .board-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .board-grid-10 { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+
+    .journey-tile {
+      aspect-ratio: 1;
+      background: #1E293B;
+      border: 1.5px solid #334155;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-size: 11px;
+      font-weight: 800;
+      color: #94A3B8;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .journey-tile.tile-sensual { border-color: #F472B6; background: rgba(244, 114, 182, 0.1); color: #F472B6; }
+    .journey-tile.tile-touch { border-color: #FB923C; background: rgba(251, 146, 60, 0.1); color: #FB923C; }
+    .journey-tile.tile-spicy { border-color: #E11D48; background: rgba(225, 29, 72, 0.15); color: #FB7185; }
+    .journey-tile.tile-deep { border-color: #A855F7; background: rgba(168, 85, 247, 0.1); color: #C084FC; }
+    .journey-tile.tile-boost { border-color: #38BDF8; background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .journey-tile.tile-climax {
+      border-color: #F59E0B;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(225, 29, 72, 0.35));
+      color: #FCD34D;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+    }
+    .tile-token-box { display: flex; gap: 2px; position: absolute; bottom: 2px; z-index: 10; }
+    .token-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .token-dot.mr { background: var(--mr-grad); }
+    .token-dot.mrs { background: var(--mrs-grad); }
+
+    .bottom-controls {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-3d);
+    }
+    .dice-cube {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      background: #FFFFFF;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 -4px 0 rgba(0,0,0,0.15);
+      border: 2px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .dice-rolling { animation: diceTumble 0.5s infinite; }
+    @keyframes diceTumble {
+      0% { transform: rotate(0deg) scale(0.92); }
+      50% { transform: rotate(20deg) scale(1.08); }
+      100% { transform: rotate(-20deg) scale(0.95); }
+    }
+
+    /* ==========================================================================
+       GAME 2: SPIN THE BOTTLE
+       ========================================================================== */
+    .bottle-arena {
+      width: 270px;
+      height: 270px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #1E293B 55%, #0F172A 100%);
+      border: 3px solid #E11D48;
+      position: relative;
+      margin: 14px auto;
+      box-shadow: 0 10px 35px rgba(225,29,72,0.25), inset 0 2px 10px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bottle-quadrant {
+      position: absolute;
+      font-size: 11px;
+      font-weight: 800;
+      color: #FDA4AF;
+      letter-spacing: 0.5px;
+    }
+    .bottle-svg {
+      width: 55px;
+      height: 170px;
+      transform-origin: 50% 50%;
+      transition: transform 3.2s cubic-bezier(0.15, 0.9, 0.25, 1);
+      cursor: pointer;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
+    }
+
+    /* ==========================================================================
+       GAME 3: TRUTH OR DARE FLIP CARDS
+       ========================================================================== */
+    .td-container {
+      perspective: 1000px;
+      width: 100%;
+      min-height: 200px;
+      margin-top: 10px;
+    }
+    .td-card-inner {
+      width: 100%;
+      min-height: 200px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .td-card-inner.flipped { transform: rotateY(180deg); }
+    .td-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 22px;
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: var(--shadow-3d);
+    }
+    .td-front {
+      background: linear-gradient(135deg, #BE123C, #4C0519);
+      border: 2px solid #FDA4AF;
+      color: white;
+    }
+    .td-back {
+      background: #FFFFFF;
+      color: #0F172A;
+      border: 2px solid #E2E8F0;
+      transform: rotateY(180deg);
+    }
+
+    /* ==========================================================================
+       MODALS
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 99999;
+    }
+    .modal-card {
+      background: linear-gradient(145deg, #1E293B, #0F172A);
+      border: 2px solid #E11D48;
+      border-radius: 28px;
+      padding: 24px 18px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: var(--shadow-pop);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <a href="index.html" class="back-btn" title="Back to Vansh 2030">
+          <span class="material-icons" style="font-size:20px;">arrow_back</span>
+        </a>
+        <div>
+          <div class="brand-title">
+            <span>Vansh 2030</span>
+            <span class="badge-tag">Games Arcade</span>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); font-weight:600;" id="arcade-partner-hint">Playing Together ❤️</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="back-btn" id="sound-btn" onclick="toggleAudio()"><span class="material-icons" style="font-size:18px;">volume_up</span></button>
+        <button class="back-btn" onclick="resetActiveGame()"><span class="material-icons" style="font-size:18px;">restart_alt</span></button>
+      </div>
+    </header>
+
+    <!-- 5 Game Tabs Selector -->
+    <nav class="games-nav-scroll">
+      <div class="game-tab-pill active" id="tab-game_1" onclick="switchGameTab('game_1')">
+        <span>🔥</span><span>Intimate Journey</span>
+      </div>
+      <div class="game-tab-pill" id="tab-game_2" onclick="switchGameTab('game_2')">
+        <span>🍾</span><span>Spin Bottle</span>
+      </div>
+      <div class="game-tab-pill" id="tab-game_3" onclick="switchGameTab('game_3')">
+        <span>❓</span><span>Truth or Dare</span>
+      </div>
+      <div class="game-tab-pill" id="tab-game_4" onclick="switchGameTab('game_4')">
+        <span>🙈</span><span>Never Have I Ever</span>
+      </div>
+      <div class="game-tab-pill" id="tab-game_5" onclick="switchGameTab('game_5')">
+        <span>🤔</span><span>Would You Rather?</span>
+      </div>
+    </nav>
+
+    <!-- DYNAMIC CUSTOM CODE RUNNER (USED IF ADMIN PROVIDED CUSTOM CODE FOR A GAME) -->
+    <div id="custom-game-frame-box" style="display:none; width:100%; height:75vh; border-radius:24px; overflow:hidden; border:2px solid var(--border-subtle); background:#0F172A;">
+      <iframe id="custom-game-iframe" style="width:100%; height:100%; border:none; display:block;" sandbox="allow-scripts allow-same-origin allow-popups allow-modals"></iframe>
+    </div>
+
+    <!-- ==========================================================================
+         VIEW 1: INTIMATE COUPLE JOURNEY (25, 50, 100 BOXES & 100 ADULT TASKS)
+         ========================================================================== -->
+    <div class="game-view-panel active" id="view-game_1">
+      <!-- Setup Screen -->
+      <div id="journey-setup-card" class="glass-card">
+        <h2 style="font-size:20px; font-weight:900; text-align:center; color:white; margin-bottom:2px;">Select Journey Length 🔥</h2>
+        <p style="font-size:12px; text-align:center; color:var(--text-muted); margin-bottom:12px;">Choose how many boxes to conquer together:</p>
+        
+        <div class="selector-grid">
+          <div class="select-tile-btn selected" id="len-25" onclick="selectJourneyLength(25)">
+            <span style="font-size:20px;">⚡</span>
+            <div class="tile-count">25</div>
+            <div class="tile-desc">Quick & Spicy<br>(~10 Mins)</div>
+          </div>
+          <div class="select-tile-btn" id="len-50" onclick="selectJourneyLength(50)">
+            <span style="font-size:20px;">🔥</span>
+            <div class="tile-count">50</div>
+            <div class="tile-desc">Passionate<br>(~20 Mins)</div>
+          </div>
+          <div class="select-tile-btn" id="len-100" onclick="selectJourneyLength(100)">
+            <span style="font-size:20px;">👑</span>
+            <div class="tile-count">100</div>
+            <div class="tile-desc">Midnight Climax<br>(~45 Mins)</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:14px;">
+          <button class="select-tile-btn selected" id="mode-pass" onclick="selectJourneyMode('pass')" style="padding:8px 4px;">
+            <span>📱</span><span style="font-size:10.5px; font-weight:700;">Pass & Play</span>
+          </button>
+          <button class="select-tile-btn" id="mode-ai" onclick="selectJourneyMode('ai')" style="padding:8px 4px;">
+            <span>🤖</span><span style="font-size:10.5px; font-weight:700;">Play with AI</span>
+          </button>
+          <button class="select-tile-btn" id="mode-online" onclick="selectJourneyMode('online')" style="padding:8px 4px;">
+            <span>☁️</span><span style="font-size:10.5px; font-weight:700;">Online Sync</span>
+          </button>
+        </div>
+
+        <button class="btn-gradient" onclick="launchJourneyMatch()">START INTIMATE JOURNEY 💋</button>
+      </div>
+
+      <!-- Play Screen -->
+      <div id="journey-play-card" style="display:none; flex-direction:column; gap:12px;">
+        <div class="glass-card" style="padding:10px 14px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:var(--mr-grad); display:flex; align-items:center; justify-content:center; font-size:16px;">👑</div>
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#38BDF8;" id="j-mr-name">Mr</div>
+              <div style="font-size:11px; color:var(--text-muted);" id="j-mr-box">Box: 1</div>
+            </div>
+          </div>
+          <div style="font-size:14px;">❤️</div>
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px; text-align:right;">
+            <div>
+              <div style="font-size:12px; font-weight:800; color:#FB7185;" id="j-mrs-name">Mrs</div>
+              <div style="font-size:11px; color:var(--text-muted);" id="j-mrs-box">Box: 1</div>
+            </div>
+            <div style="width:34px; height:34px; border-radius:50%; background:var(--mrs-grad); display:flex; align-items:center; justify-content:center; font-size:16px;">👑</div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="text-align:center; padding:10px;">
+          <span class="badge-tag" id="j-turn-pill" style="font-size:12px;">Mr's Turn 🎲</span>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;" id="j-status-text">Roll the dice to advance!</div>
+        </div>
+
+        <div class="board-container">
+          <div id="journey-board-grid"></div>
+        </div>
+
+        <div class="bottom-controls">
+          <div>
+            <div style="font-size:11px; font-weight:800; color:var(--text-muted);" id="j-player-hint">Mr's Roll</div>
+            <button class="btn-gradient" id="j-roll-btn" style="padding:8px 16px; font-size:12px;" onclick="rollJourneyDice()">ROLL DICE</button>
+          </div>
+          <div id="j-dice-box" class="dice-cube" onclick="rollJourneyDice()">🎲</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         VIEW 2: ADULT SPIN THE BOTTLE
+         ========================================================================== -->
+    <div class="game-view-panel" id="view-game_2">
+      <div class="glass-card" style="text-align:center; padding:14px;">
+        <h3 style="font-size:17px; font-weight:800; color:#FFFFFF;">Adult Spin the Bottle 🍾</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Flick or tap the bottle to spin! Complete the dare it points to.</p>
+        <div style="display:flex; justify-content:center; gap:8px; margin-top:10px;">
+          <button id="btn-bottle-rom" class="game-tab-pill active" style="padding:4px 12px; font-size:11px;" onclick="setBottleMode('romantic')">Romantic</button>
+          <button id="btn-bottle-spicy" class="game-tab-pill" style="padding:4px 12px; font-size:11px;" onclick="setBottleMode('spicy')">Spicy 18+</button>
+        </div>
+      </div>
+
+      <div class="bottle-arena">
+        <div class="bottle-quadrant" style="top:10px;">💋 Kisses</div>
+        <div class="bottle-quadrant" style="bottom:10px;">🔥 Spicy Dare</div>
+        <div class="bottle-quadrant" style="left:10px;">💆 Massage</div>
+        <div class="bottle-quadrant" style="right:10px;">🤫 Whisper</div>
+
+        <svg id="bottle-svg-elem" class="bottle-svg" viewBox="0 0 60 180" onclick="spinBottle()">
+          <path d="M26,10 L34,10 L34,35 Q34,45 38,55 L48,80 Q52,90 52,105 L52,165 Q52,175 42,175 L18,175 Q8,175 8,165 L8,105 Q8,90 12,80 L22,55 Q26,45 26,35 Z" fill="url(#bottleGrad)" stroke="#1E293B" stroke-width="2"/>
+          <rect x="25" y="4" width="10" height="8" rx="2" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/>
+          <rect x="12" y="95" width="36" height="45" rx="4" fill="#FFFFFF" opacity="0.9"/>
+          <text x="30" y="118" font-size="9" font-weight="900" text-anchor="middle" fill="#BE123C">VANSH</text>
+          <text x="30" y="130" font-size="7" font-weight="800" text-anchor="middle" fill="#64748B">2030</text>
+          <defs>
+            <linearGradient id="bottleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#065F46"/>
+              <stop offset="50%" stop-color="#047857"/>
+              <stop offset="100%" stop-color="#064E3B"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <button class="btn-gradient" onclick="spinBottle()">SPIN BOTTLE NOW 🍾</button>
+
+      <div id="bottle-result-box" class="glass-card" style="display:none; text-align:center; border-color:#E11D48;">
+        <span style="font-size:11px; font-weight:800; color:#FB7185; text-transform:uppercase;">Bottle Points To:</span>
+        <h3 id="bottle-winner-person" style="font-size:18px; font-weight:900; color:#FFFFFF; margin:4px 0 8px;">Partner</h3>
+        <p id="bottle-task-desc" style="font-size:14px; color:#E2E8F0; line-height:1.5; font-weight:600;"></p>
+        <button class="btn-gradient" style="margin-top:12px; padding:8px 16px; font-size:12px;" onclick="acceptBottleDare()">Dare Completed! ❤️</button>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         VIEW 3: COUPLE TRUTH OR DARE
+         ========================================================================== -->
+    <div class="game-view-panel" id="view-game_3">
+      <div class="glass-card" style="padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h4 style="font-size:15px; font-weight:800; color:#FFFFFF;">Couple Truth or Dare 🔥</h4>
+          <div style="display:flex; gap:4px;">
+            <button id="td-b-rom" class="game-tab-pill active" style="padding:3px 8px; font-size:10px;" onclick="setTDMode('romantic')">Romantic</button>
+            <button id="td-b-spicy" class="game-tab-pill" style="padding:3px 8px; font-size:10px;" onclick="setTDMode('spicy')">Spicy 18+</button>
+            <button id="td-b-deep" class="game-tab-pill" style="padding:3px 8px; font-size:10px;" onclick="setTDMode('deep')">Deep</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn-gradient" style="background:var(--mr-grad);" onclick="drawTDCard('truth')">💬 Pick TRUTH</button>
+        <button class="btn-gradient" onclick="drawTDCard('dare')">🔥 Pick DARE</button>
+      </div>
+
+      <div class="td-container" onclick="toggleTDFlip()">
+        <div class="td-card-inner" id="td-inner-card">
+          <div class="td-face td-front">
+            <div style="font-size:42px; margin-bottom:8px;">❓</div>
+            <h3 style="font-size:17px; font-weight:800;">Tap "Truth" or "Dare" Above</h3>
+            <p style="font-size:12px; opacity:0.85; margin-top:4px;">Reveal your romantic or spicy challenge!</p>
+          </div>
+          <div class="td-face td-back">
+            <span id="td-card-badge" style="font-size:11px; font-weight:800; color:#BE123C; text-transform:uppercase;">DARE</span>
+            <p id="td-card-text" style="font-size:15px; font-weight:700; color:#0F172A; margin:12px 0; line-height:1.5;"></p>
+            <button class="btn-gradient" style="padding:6px 14px; font-size:11.5px;" onclick="event.stopPropagation(); markTDDone()">Completed! ✅</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         VIEW 4: NEVER HAVE I EVER
+         ========================================================================== -->
+    <div class="game-view-panel" id="view-game_4">
+      <div class="glass-card" style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="font-size:15px; font-weight:800; color:#FFFFFF;">Never Have I Ever 🙈</h4>
+        <button class="game-tab-pill" style="padding:4px 10px; font-size:11px;" onclick="nextNHIECard()">Next Card ➡️</button>
+      </div>
+
+      <div class="glass-card" style="text-align:center; padding:24px 16px;">
+        <span style="font-size:11px; font-weight:800; color:#C084FC; text-transform:uppercase;">Couple Question:</span>
+        <h3 id="nhie-q-text" style="font-size:17px; font-weight:800; color:#FFFFFF; margin:10px 0 16px; line-height:1.45;">
+          Never have I ever had a sexy dream about you during the day.
+        </h3>
+
+        <div style="display:flex; gap:10px;">
+          <button class="select-tile-btn" id="nhie-yes-btn" style="flex:1; padding:16px;" onclick="voteNHIE('have')">
+            <span style="font-size:26px;">🙈</span>
+            <span style="font-size:14px; font-weight:800;">I Have!</span>
+          </button>
+          <button class="select-tile-btn" id="nhie-no-btn" style="flex:1; padding:16px;" onclick="voteNHIE('havenot')">
+            <span style="font-size:26px;">😇</span>
+            <span style="font-size:14px; font-weight:800;">I Haven't</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="nhie-results-box" class="glass-card" style="display:none; text-align:center;">
+        <h4 style="font-size:13.5px; font-weight:800; color:#A78BFA;">Answers Revealed:</h4>
+        <div style="display:flex; justify-content:space-around; margin-top:8px; font-size:13px;">
+          <div id="nhie-mr-ans"><strong>Mr:</strong> ⏳</div>
+          <div id="nhie-mrs-ans"><strong>Mrs:</strong> ⏳</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         VIEW 5: WOULD YOU RATHER?
+         ========================================================================== -->
+    <div class="game-view-panel" id="view-game_5">
+      <div class="glass-card" style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="font-size:15px; font-weight:800; color:#FFFFFF;">Would You Rather? 🤔</h4>
+        <button class="game-tab-pill" style="padding:4px 10px; font-size:11px;" onclick="nextWYRCard()">Next Dilemma ➡️</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div id="wyr-box-a" class="glass-card" style="cursor:pointer; border:2px solid transparent; padding:16px;" onclick="voteWYR('A')">
+          <span style="font-size:11px; font-weight:800; color:#38BDF8;">OPTION A</span>
+          <h4 id="wyr-text-a" style="font-size:14.5px; font-weight:800; color:#FFFFFF; margin-top:4px;">A spontaneous midnight long drive with our favorite playlist</h4>
+        </div>
+
+        <div style="text-align:center; font-size:11px; font-weight:900; color:var(--text-muted);">— OR —</div>
+
+        <div id="wyr-box-b" class="glass-card" style="cursor:pointer; border:2px solid transparent; padding:16px;" onclick="voteWYR('B')">
+          <span style="font-size:11px; font-weight:800; color:#FB7185;">OPTION B</span>
+          <h4 id="wyr-text-b" style="font-size:14.5px; font-weight:800; color:#FFFFFF; margin-top:4px;">Cooking a candlelit dinner together at home with slow dancing</h4>
+        </div>
+      </div>
+
+      <div id="wyr-match-box" class="glass-card" style="display:none; text-align:center;">
+        <h4 id="wyr-verdict" style="font-size:14.5px; font-weight:800; color:#10B981;">Checking compatibility...</h4>
+        <div style="display:flex; justify-content:space-around; margin-top:6px; font-size:13px;">
+          <div id="wyr-mr-pick"><strong>Mr:</strong> Option A</div>
+          <div id="wyr-mrs-pick"><strong>Mrs:</strong> Option A</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Task Card Modal -->
+  <div class="modal-overlay" id="journey-task-modal">
+    <div class="modal-card">
+      <span class="badge-tag" id="j-task-badge">Box #6 • SPICY TOUCH 🔥</span>
+      <h3 style="font-size:19px; font-weight:900; color:#FFFFFF; margin:8px 0;" id="j-task-title">Shirtless Embrace</h3>
+      <p style="font-size:14px; font-weight:600; color:#E2E8F0; line-height:1.5; background:rgba(15,23,42,0.6); padding:14px; border-radius:16px; margin-bottom:16px; border:1px solid var(--border-subtle);" id="j-task-desc">
+        Remove your shirt and give your partner a warm 30-second bare-skin hug.
+      </p>
+      <button class="btn-gradient" onclick="finishJourneyTask()">TASK COMPLETED! ❤️</button>
+    </div>
+  </div>
+
+  <!-- Victory Climax Modal -->
+  <div class="modal-overlay" id="victory-climax-modal">
+    <div class="modal-card" style="border-color:#F59E0B;">
+      <div style="font-size:52px; margin-bottom:6px;">🏆👑🔥</div>
+      <h2 style="font-size:22px; font-weight:900; color:#FCD34D; margin-bottom:6px;" id="victory-winner-title">Climax Conquered!</h2>
+      <p style="font-size:13.5px; font-weight:600; color:#FDE68A; margin-bottom:18px; line-height:1.5;" id="victory-winner-reward"></p>
+      <button class="btn-gradient" style="background:var(--gold-grad); color:#451A03; font-weight:900;" onclick="resetJourneyGame(false)">Play Another Round 💋</button>
+    </div>
+  </div>
+
+  <!-- SCRIPTS & ENGINE -->
+  <script>
+    /* 1. DATA & TASKS */
+    const ALL_100_TASKS = [{"num": 1, "type": "sensual", "title": "Warm Welcome", "text": "Give your partner a slow 15-second hug, whispering how good they look right now."}, {"num": 2, "type": "touch", "title": "Gentle Touch", "text": "Slowly stroke your partner's hair, cheek, and jawline with both hands."}, {"num": 3, "type": "spicy", "title": "Neck Kiss", "text": "Plant three warm, lingering kisses on your partner's neck right below their ear."}, {"num": 4, "type": "deep", "title": "Deep Desire", "text": "Look into your partner's eyes and confess: what outfit or look of theirs drives you crazy?"}, {"num": 5, "type": "boost", "title": "\u26a1 Cupid's Rush", "text": "Cupid's speed boost! Advance 2 extra boxes forward immediately!"}, {"num": 6, "type": "spicy", "title": "Shirtless Embrace", "text": "Remove your shirt (or partner removes it) and give a warm 30-second bare-skin hug."}, {"num": 7, "type": "sensual", "title": "Lip Trace", "text": "Trace your index finger gently across your partner's lips, then seal it with a soft kiss."}, {"num": 8, "type": "deep", "title": "Secret Fantasy", "text": "Whisper one intimate romantic fantasy you think about when you are in bed alone."}, {"num": 9, "type": "touch", "title": "Shoulder Melt", "text": "Give your partner an intimate 1-minute shoulder and collarbone massage."}, {"num": 10, "type": "spicy", "title": "Ear Whisper", "text": "Gently nibble your partner's earlobe and whisper the naughtiest thought on your mind."}, {"num": 11, "type": "sensual", "title": "Blind Touch", "text": "Close your eyes. Partner guides your hands to three places on their body they want you to touch."}, {"num": 12, "type": "deep", "title": "Vulnerable Truth", "text": "Share the exact moment you felt the most intoxicating physical attraction towards your partner."}, {"num": 13, "type": "spicy", "title": "Collarbone Trail", "text": "Leave a trail of slow, warm kisses from your partner's shoulder all the way to their lips."}, {"num": 14, "type": "touch", "title": "Back Trace", "text": "Slide your hands underneath partner's shirt and trace their spine slowly from top to bottom."}, {"num": 15, "type": "boost", "title": "\u26a1 Passion Spark", "text": "Passion boost! Jump ahead 2 boxes and give partner a breathless kiss!"}, {"num": 16, "type": "spicy", "title": "Lap Surrender", "text": "Sit in your partner's lap for the next full round while they wrap their arms around your waist."}, {"num": 17, "type": "deep", "title": "Turn-On Confession", "text": "Tell your partner the one scent, sound, or touch from them that instantly turns you on."}, {"num": 18, "type": "sensual", "title": "Bite & Tease", "text": "Gently bite your partner's lower lip during a 20-second deep French kiss."}, {"num": 19, "type": "touch", "title": "Waistline Hold", "text": "Pull your partner against your body by their waist loops and hold them close for 20 seconds."}, {"num": 20, "type": "spicy", "title": "Bare Hug & Breath", "text": "Hug without shirts, letting your partner feel your warm breath against their collarbone."}, {"num": 21, "type": "sensual", "title": "Ice or Warmth", "text": "Take an ice cube or warm sip of water and kiss partner's neck and chest."}, {"num": 22, "type": "deep", "title": "Intimate Wish", "text": "What is one thing you want your partner to do in bed tonight that hasn't happened in a while?"}, {"num": 23, "type": "spicy", "title": "Seductive Whisper", "text": "Whisper three explicit reasons why your partner is irresistible to you."}, {"num": 24, "type": "touch", "title": "Thigh Touch", "text": "Rest your hand firmly on your partner's inner thigh while looking into their eyes."}, {"num": 25, "type": "climax", "title": "\ud83c\udff0 Level 25 Climax!", "text": "Level 25 Grand Reward! Give your partner a slow, uninterrupted 60-second kiss anywhere they demand!"}, {"num": 26, "type": "spicy", "title": "Slow Seduction", "text": "Undress one article of clothing of your partner's choice with romantic eye contact."}, {"num": 27, "type": "deep", "title": "Sensual Recall", "text": "Describe in detail the hottest, most memorable intimate night you have ever had together."}, {"num": 28, "type": "touch", "title": "Finger Caress", "text": "Interlock fingers tightly and kiss each knuckle while declaring a sweet, naughty promise."}, {"num": 29, "type": "boost", "title": "\u26a1 Cupid's Sprint", "text": "Cupid's rush! Leap forward 3 boxes into deeper romance!"}, {"num": 30, "type": "spicy", "title": "Neck Breath & Shiver", "text": "Blow gently on partner's neck, then kiss the sensitive spot behind their ear until they shiver."}, {"num": 31, "type": "sensual", "title": "Slow Dance", "text": "Stand up and slow dance with partner chest-to-chest for 1 minute with no music."}, {"num": 32, "type": "deep", "title": "Heartbeat Connection", "text": "Place your hand directly over partner's bare chest/heart and hold eye contact for 45 seconds."}, {"num": 33, "type": "spicy", "title": "Chest Kisses", "text": "Kiss your partner's upper chest and collarbone with slow, deep kisses."}, {"num": 34, "type": "touch", "title": "Sensual Back Scratch", "text": "Use light fingernails to trace teasing patterns on partner's back and shoulders."}, {"num": 35, "type": "sensual", "title": "Tease & Pull", "text": "Lean in for a passionate kiss, pause 1 millimeter away for 10 seconds, then kiss passionately."}, {"num": 36, "type": "spicy", "title": "Tempting Dare", "text": "Let your partner choose one place on their body for you to kiss for 30 uninterrupted seconds."}, {"num": 37, "type": "deep", "title": "Midnight Craving", "text": "Confess: What is your favorite time to make love (morning light, afternoon lazy, or late night)?"}, {"num": 38, "type": "touch", "title": "Warm Hands Massage", "text": "Rub your hands together until warm, then cup partner's cheeks and kiss them deeply."}, {"num": 39, "type": "boost", "title": "\u26a1 Romance Surge", "text": "Advance 2 boxes and claim a romantic neck kiss coupon!"}, {"num": 40, "type": "spicy", "title": "Sensual Bite", "text": "Gently bite partner's jawline, moving down to their neck with soft suction."}, {"num": 41, "type": "sensual", "title": "Blindfolded Kisses", "text": "Partner closes their eyes; kiss them in 4 secret spots and let them guess each location."}, {"num": 42, "type": "deep", "title": "Deepest Turn-On", "text": "What is the single naughtiest text or picture your partner has ever sent that drove you crazy?"}, {"num": 43, "type": "touch", "title": "Bare Skin Heat", "text": "Lay your hands flat against partner's stomach / lower abdomen and feel their warmth for 30s."}, {"num": 44, "type": "spicy", "title": "Intimate Whisper", "text": "Describe exactly what you want to do to your partner as soon as this game finishes."}, {"num": 45, "type": "sensual", "title": "French Passion", "text": "An uninterrupted 45-second deep French kiss with hands tangled in each other's hair."}, {"num": 46, "type": "deep", "title": "Soul Connection", "text": "What is one emotional insecurity you have that disappears completely when partner holds you?"}, {"num": 47, "type": "touch", "title": "Foot & Calf Love", "text": "Give your partner a relaxing, sensual foot or calf massage with slow thumb strokes."}, {"num": 48, "type": "spicy", "title": "Shirt Removal", "text": "Both partners play the rest of the game shirtless / in comfortable intimate wear."}, {"num": 49, "type": "boost", "title": "\u26a1 Climax Sprint", "text": "Sprint forward 2 boxes straight into the 50-mark threshold!"}, {"num": 50, "type": "climax", "title": "\ud83c\udff0 Level 50 Climax!", "text": "Level 50 Grand Reward! 3-minute full sensual body cuddle with neck kisses & whispered fantasies!"}, {"num": 51, "type": "sensual", "title": "Whispered Command", "text": "Tell your partner how to touch you for the next 30 seconds while you relax and enjoy."}, {"num": 52, "type": "deep", "title": "Unspoken Desire", "text": "What is something new you have wanted to try in bed but haven't found the right words to say?"}, {"num": 53, "type": "spicy", "title": "Body Kiss Countdown", "text": "Give partner 10 kisses in 10 different places in under 30 seconds."}, {"num": 54, "type": "touch", "title": "Sensual Breath", "text": "Rest your forehead against partner's, breathing in unison with hands holding their waist."}, {"num": 55, "type": "spicy", "title": "Neck Passion", "text": "Kiss and nibble both sides of partner's neck, leaving warm tingles behind."}, {"num": 56, "type": "deep", "title": "Favorite Intimacy", "text": "Which do you crave more: intense wild passion, or slow, gentle, romantic lovemaking?"}, {"num": 57, "type": "sensual", "title": "Hair Grip Kiss", "text": "Gently grip partner's hair from the back of their head and pull them in for a commanding kiss."}, {"num": 58, "type": "touch", "title": "Spine Tingles", "text": "Blow softly along partner's spine from their neck down to their lower back."}, {"num": 59, "type": "boost", "title": "\u26a1 Passion Flare", "text": "Passion flare! Advance 2 boxes ahead!"}, {"num": 60, "type": "spicy", "title": "Lap Tease", "text": "Straddle your partner's lap, press your chest against theirs, and whisper a daring fantasy."}, {"num": 61, "type": "sensual", "title": "Sensory Seduction", "text": "Blindfold partner with hands and give them 3 different types of kisses (soft, deep, biting)."}, {"num": 62, "type": "deep", "title": "Romantic Vow", "text": "Make an intimate romantic vow about how you will love and pleasure your partner tonight."}, {"num": 63, "type": "spicy", "title": "Slow Undress", "text": "Slowly remove one item of clothing from your partner using only your teeth or one hand."}, {"num": 64, "type": "touch", "title": "Collarbone Caress", "text": "Kiss along your partner's collarbone while your hands slowly caress their sides."}, {"num": 65, "type": "sensual", "title": "Sensual Gaze", "text": "Look into partner's eyes for 60 seconds with fingers intertwined without speaking a word."}, {"num": 66, "type": "deep", "title": "Greatest Craving", "text": "Tell your partner the one thing they do that drives you wild with desire every single time."}, {"num": 67, "type": "spicy", "title": "Shirtless Lap Hug", "text": "Sit in partner's lap shirtless and wrap your legs around them for a 45-second intimate hug."}, {"num": 68, "type": "touch", "title": "Tender Massage", "text": "A 2-minute sensual lower back and glute massage with warm deliberate pressure."}, {"num": 69, "type": "boost", "title": "\u26a1 Midnight Rush", "text": "Midnight rush! Jump ahead 2 boxes toward the 75-mark!"}, {"num": 70, "type": "spicy", "title": "Ear & Neck Trail", "text": "Kiss behind partner's ear, down their throat, and stop at the center of their chest."}, {"num": 71, "type": "sensual", "title": "Whisper Fantasy", "text": "Whisper a 3-sentence spicy scenario you want to enact together immediately after this game."}, {"num": 72, "type": "deep", "title": "Intimate Trust", "text": "Tell your partner why your body and soul feel safe completely letting go with them."}, {"num": 73, "type": "spicy", "title": "Neck Love Bite", "text": "Leave a tender love mark or gentle suction on partner's collarbone or shoulder."}, {"num": 74, "type": "touch", "title": "Hand Under Shirt", "text": "Place both hands flat against partner's bare chest/stomach for 40 seconds of pure warmth."}, {"num": 75, "type": "climax", "title": "\ud83c\udff0 Level 75 Milestone!", "text": "Level 75 Milestone! Both partners share a passionate 1-minute full-body embrace with kisses!"}, {"num": 76, "type": "sensual", "title": "Erotic Tease", "text": "Give partner 5 slow kisses around their mouth without actually touching their lips."}, {"num": 77, "type": "deep", "title": "Soul Confession", "text": "Confess the most intoxicating thought you had about your partner during the day today."}, {"num": 78, "type": "spicy", "title": "Lap Seduction", "text": "Gently grind against partner's lap during a passionate, breathtaking embrace."}, {"num": 79, "type": "boost", "title": "\u26a1 Electric Touch", "text": "Electric leap! Advance 3 boxes toward the grand finish!"}, {"num": 80, "type": "touch", "title": "Back Trace & Nibble", "text": "Run your fingers along partner's spine while planting gentle nibbles on their neck."}, {"num": 81, "type": "sensual", "title": "Breathless French Kiss", "text": "A passionate 60-second French kiss where you cannot break contact for even one second."}, {"num": 82, "type": "deep", "title": "Endless Attraction", "text": "Tell your partner why you will still find them just as irresistibly sexy 30 years from now."}, {"num": 83, "type": "spicy", "title": "Sensual Whispering", "text": "Whisper your partner's name against their neck with hot, slow breaths."}, {"num": 84, "type": "touch", "title": "Bare Skin Massage", "text": "A full 2-minute shirtless back and neck massage with partner laying relaxed."}, {"num": 85, "type": "sensual", "title": "Teasing Countdown", "text": "Count down from 10 to 1, giving your partner an increasingly passionate kiss with each number."}, {"num": 86, "type": "spicy", "title": "Lap Straddle Kiss", "text": "Straddle your partner, pull them tightly against you, and kiss their jaw and lips relentlessly."}, {"num": 87, "type": "deep", "title": "Intimate Wish", "text": "Name 3 specific things your partner can do tonight to make it the best night of your life."}, {"num": 88, "type": "touch", "title": "Fingertip Tracing", "text": "Trace partner's inner arm, shoulder, collarbone, and waist with feather-light touch."}, {"num": 89, "type": "boost", "title": "\u26a1 Final Stretch", "text": "Final sprint boost! Jump forward 2 boxes toward 100!"}, {"num": 90, "type": "spicy", "title": "Shirtless Cuddle & Seduce", "text": "Full shirtless embrace for 1 minute while whispering what you will do when you win."}, {"num": 91, "type": "sensual", "title": "Kiss the Weak Spot", "text": "Partner reveals their single most sensitive spot; kiss and tease it for 30 seconds."}, {"num": 92, "type": "deep", "title": "Forever Desire", "text": "Confess what makes making love with your partner uniquely special compared to anything else."}, {"num": 93, "type": "spicy", "title": "Commanding Embrace", "text": "Pin partner's hands gently above their head and kiss their neck with deep passion."}, {"num": 94, "type": "touch", "title": "Full Body Heat", "text": "Press your body entirely against partner's, feeling every heartbeat and breath."}, {"num": 95, "type": "sensual", "title": "Intoxicated Kisses", "text": "Kiss partner like you haven't seen them in a year\u2014desperate, passionate, and breathless."}, {"num": 96, "type": "spicy", "title": "Whisper the Ending", "text": "Whisper how tonight will end in the bedroom in graphic, loving detail."}, {"num": 97, "type": "deep", "title": "Absolute Surrender", "text": "Tell your partner: 'Tonight, my body and heart belong completely to you.'"}, {"num": 98, "type": "spicy", "title": "Final Tease", "text": "One final breathless 45-second French kiss with hands gripping waist and neck."}, {"num": 99, "type": "boost", "title": "\u26a1 The Threshold", "text": "One step from glory! Advance 1 box directly to the Castle!"}, {"num": 100, "type": "climax", "title": "\ud83d\udc51 THE ULTIMATE MIDNIGHT CLIMAX!", "text": "\ud83c\udfc6 VICTORY & TOTAL SURRENDER! The winner is crowned Love Sovereign! Winner claims: Total control of the bedroom tonight, a 20-minute full-body oil massage, and full enactment of their wildest fantasy!"}];
+
+    /* 2. AUDIO SYNTHESIZER */
+    let isMuted = false;
+    const SoundFX = {
+      ctx: null,
+      init() {
+        if (!this.ctx && typeof window !== 'undefined') {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      },
+      playDice() {
+        if (isMuted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          for (let i = 0; i < 5; i++) {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(160 + Math.random() * 240, now + i * 0.06);
+            gain.gain.setValueAtTime(0.14, now + i * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.05);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + i * 0.06);
+            osc.stop(now + i * 0.06 + 0.06);
+          }
+        } catch(e){}
+      },
+      playHop() {
+        if (isMuted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(360, now);
+          osc.frequency.exponentialRampToValueAtTime(560, now + 0.08);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        } catch(e){}
+      },
+      playPopup() {
+        if (isMuted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          [523, 659, 784].forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(f, now + idx * 0.07);
+            gain.gain.setValueAtTime(0.18, now + idx * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.18);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.07);
+            osc.stop(now + idx * 0.07 + 0.2);
+          });
+        } catch(e){}
+      },
+      playVictory() {
+        if (isMuted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(f, now + idx * 0.12);
+            gain.gain.setValueAtTime(0.25, now + idx * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.45);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.12);
+            osc.stop(now + idx * 0.12 + 0.5);
+          });
+        } catch(e){}
+      }
+    };
+
+    function toggleAudio() {
+      isMuted = !isMuted;
+      document.getElementById("sound-btn").innerHTML = `<span class="material-icons" style="font-size:18px;">${isMuted ? 'volume_off' : 'volume_up'}</span>`;
+    }
+
+    /* 3. FIREBASE CONFIGURATION (VANSH-2030) */
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjaABrdQFOn7Vo5ncRvtebmtxqpo0wj5E",
+      authDomain: "vansh-2030.firebaseapp.com",
+      projectId: "vansh-2030",
+      storageBucket: "vansh-2030.firebasestorage.app",
+      messagingSenderId: "384646112899",
+      appId: "1:384646112899:web:e3de75e2963f43a25a1db6",
+      measurementId: "G-DFND2NT5LL"
+    };
+
+    let isFirebaseReady = false;
+    let db = null;
+    const gamesBroadcast = new BroadcastChannel("vansh_games_sync");
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      isFirebaseReady = true;
+    } catch(e) {
+      console.warn("Offline/local mode:", e);
+    }
+
+    function getNickname(p) {
+      const n = JSON.parse(localStorage.getItem("vansh_nicknames") || '{"mr":"Mr","mrs":"Mrs"}');
+      return n[p] || (p === "mr" ? "Mr" : "Mrs");
+    }
+
+    /* 4. TAB NAVIGATION & DYNAMIC CUSTOM CODE LOADER */
+    let currentActiveTab = "game_1";
+
+    function switchGameTab(tabKey) {
+      currentActiveTab = tabKey;
+      document.querySelectorAll(".game-tab-pill").forEach(p => p.classList.remove("active"));
+      const pill = document.getElementById(`tab-${tabKey}`);
+      if (pill) pill.classList.add("active");
+
+      // Check if Admin deployed custom code for this game slot!
+      const customSlots = JSON.parse(localStorage.getItem("vansh_custom_games") || "{}");
+      const custom = customSlots[tabKey];
+      const frameBox = document.getElementById("custom-game-frame-box");
+      const iframe = document.getElementById("custom-game-iframe");
+
+      if (custom && (custom.rawCode || custom.targetUrl)) {
+        // Hide standard view, load custom code in frame!
+        document.querySelectorAll(".game-view-panel").forEach(p => p.classList.remove("active"));
+        frameBox.style.display = "block";
+        if (custom.targetUrl) iframe.src = custom.targetUrl;
+        else iframe.srcdoc = custom.rawCode;
+        return;
+      } else {
+        frameBox.style.display = "none";
+      }
+
+      document.querySelectorAll(".game-view-panel").forEach(p => p.classList.remove("active"));
+      const view = document.getElementById(`view-${tabKey}`);
+      if (view) view.classList.add("active");
+
+      if (tabKey === "game_2") initBottleGame();
+      if (tabKey === "game_3") initTruthDareGame();
+      if (tabKey === "game_4") initNHIEGame();
+      if (tabKey === "game_5") initWYRGame();
+    }
+
+    function resetActiveGame() {
+      if (currentActiveTab === "game_1") resetJourneyGame(true);
+      if (currentActiveTab === "game_2") document.getElementById("bottle-result-box").style.display = "none";
+      if (currentActiveTab === "game_3") toggleTDFlip();
+      if (currentActiveTab === "game_4") nextNHIECard();
+      if (currentActiveTab === "game_5") nextWYRCard();
+    }
+
+    /* ==========================================================================
+       GAME 1 LOGIC: INTIMATE JOURNEY (25 / 50 / 100 BOXES & 100 TASKS)
+       ========================================================================== */
+    let jBoxes = 25;
+    let jMode = "pass";
+    let jRole = "mr";
+
+    let jState = {
+      total: 25,
+      mode: "pass",
+      turn: "mr",
+      pos: { mr: 1, mrs: 1 },
+      dice: 1,
+      hasRolled: false,
+      winner: null
+    };
+    let isJMoving = false;
+
+    function selectJourneyLength(n) {
+      jBoxes = n;
+      [25, 50, 100].forEach(num => document.getElementById(`len-${num}`).classList.remove("selected"));
+      document.getElementById(`len-${n}`).classList.add("selected");
+    }
+
+    function selectJourneyMode(m) {
+      jMode = m;
+      ['pass', 'ai', 'online'].forEach(id => document.getElementById(`mode-${id}`).classList.remove("selected"));
+      document.getElementById(`mode-${m}`).classList.add("selected");
+    }
+
+    function launchJourneyMatch() {
+      if (jMode === "online") {
+        const choice = prompt("Play Online As:\n1 for Mr\n2 for Mrs", "1");
+        jRole = (choice === "2") ? "mrs" : "mr";
+      }
+
+      jState = {
+        total: jBoxes,
+        mode: jMode,
+        turn: "mr",
+        pos: { mr: 1, mrs: 1 },
+        dice: 1,
+        hasRolled: false,
+        winner: null
+      };
+
+      buildJourneyGrid(jBoxes);
+      document.getElementById("journey-setup-card").style.display = "none";
+      document.getElementById("journey-play-card").style.display = "flex";
+      renderJourneyUI();
+      syncJourneyState();
+    }
+
+    function buildJourneyGrid(total) {
+      const grid = document.getElementById("journey-board-grid");
+      grid.innerHTML = "";
+      grid.className = (total <= 25) ? "board-grid-5" : "board-grid-10";
+
+      for (let i = 1; i <= total; i++) {
+        const tile = document.createElement("div");
+        tile.className = "journey-tile";
+        tile.id = `jtile-${i}`;
+
+        const taskData = ALL_100_TASKS[i - 1] || { num: i, type: "spicy", title: "Touch", text: "Kiss partner passionately!" };
+        tile.classList.add(`tile-${taskData.type}`);
+
+        let icon = "💋";
+        if (taskData.type === "touch") icon = "🔥";
+        if (taskData.type === "deep") icon = "💬";
+        if (taskData.type === "boost") icon = "⚡";
+        if (i === total) {
+          icon = "🏰";
+          tile.classList.add("tile-climax");
+        }
+
+        tile.innerHTML = `
+          <div style="font-size:12px;">${icon}</div>
+          <div style="font-size:9.5px; margin-top:2px;">${i}</div>
+          <div class="tile-token-box" id="jbox-${i}"></div>
+        `;
+
+        tile.onclick = () => showJourneyTaskPopup(i);
+        grid.appendChild(tile);
+      }
+    }
+
+    function showJourneyTaskPopup(boxNum) {
+      const task = ALL_100_TASKS[boxNum - 1];
+      if (!task) return;
+      document.getElementById("j-task-badge").textContent = `Box #${boxNum} • ${task.type.toUpperCase()}`;
+      document.getElementById("j-task-title").textContent = task.title;
+      document.getElementById("j-task-desc").textContent = task.text;
+      document.getElementById("journey-task-modal").style.display = "flex";
+      SoundFX.playPopup();
+    }
+
+    function renderJourneyUI() {
+      const total = jState.total;
+      document.getElementById("j-mr-name").textContent = getNickname("mr");
+      document.getElementById("j-mrs-name").textContent = getNickname("mrs");
+      document.getElementById("j-mr-box").textContent = `Box: ${jState.pos.mr} / ${total}`;
+      document.getElementById("j-mrs-box").textContent = `Box: ${jState.pos.mrs} / ${total}`;
+
+      const active = jState.turn;
+      const turnPill = document.getElementById("j-turn-pill");
+      turnPill.textContent = `${getNickname(active)}'s Turn 🎲`;
+      turnPill.style.background = (active === "mr") ? "var(--mr-grad)" : "var(--mrs-grad)";
+      document.getElementById("j-player-hint").textContent = `${getNickname(active)}'s Roll`;
+
+      const diceEmojis = ["🎲", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+      const diceEl = document.getElementById("j-dice-box");
+      if (!diceEl.classList.contains("dice-rolling")) {
+        diceEl.textContent = diceEmojis[jState.dice] || "🎲";
+      }
+
+      const rollBtn = document.getElementById("j-roll-btn");
+      const canRoll = !jState.hasRolled && !isJMoving && !jState.winner && (jState.mode !== "online" || jRole === active);
+      rollBtn.disabled = !canRoll;
+      rollBtn.style.opacity = canRoll ? "1" : "0.45";
+
+      // Clear tokens
+      for (let i = 1; i <= total; i++) {
+        const b = document.getElementById(`jbox-${i}`);
+        if (b) b.innerHTML = "";
+      }
+
+      // Render Mr
+      const mrBox = document.getElementById(`jbox-${jState.pos.mr}`);
+      if (mrBox) {
+        const d = document.createElement("div");
+        d.className = "token-dot mr";
+        mrBox.appendChild(d);
+      }
+      // Render Mrs
+      const mrsBox = document.getElementById(`jbox-${jState.pos.mrs}`);
+      if (mrsBox) {
+        const d = document.createElement("div");
+        d.className = "token-dot mrs";
+        mrsBox.appendChild(d);
+      }
+
+      // Scroll active
+      const tile = document.getElementById(`jtile-${jState.pos[active]}`);
+      if (tile) tile.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    async function rollJourneyDice() {
+      if (jState.hasRolled || isJMoving || jState.winner) return;
+      if (jState.mode === "online" && jState.turn !== jRole) return;
+
+      const diceEl = document.getElementById("j-dice-box");
+      diceEl.classList.add("dice-rolling");
+      SoundFX.playDice();
+
+      const faces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+      let c = 0;
+      const shuffler = setInterval(() => {
+        diceEl.textContent = faces[Math.floor(Math.random() * 6)];
+        c++;
+        if (c >= 6) clearInterval(shuffler);
+      }, 70);
+
+      setTimeout(async () => {
+        diceEl.classList.remove("dice-rolling");
+        const roll = Math.floor(Math.random() * 6) + 1;
+        jState.dice = roll;
+        jState.hasRolled = true;
+
+        const player = jState.turn;
+        const cur = jState.pos[player];
+        const target = Math.min(cur + roll, jState.total);
+
+        // Step hop
+        isJMoving = true;
+        for (let s = cur + 1; s <= target; s++) {
+          jState.pos[player] = s;
+          SoundFX.playHop();
+          renderJourneyUI();
+          await new Promise(r => setTimeout(r, 160));
+        }
+        isJMoving = false;
+
+        if (target >= jState.total) {
+          triggerJourneyVictory(player);
+          return;
+        }
+
+        showJourneyTaskPopup(target);
+        await syncJourneyState();
+      }, 480);
+    }
+
+    async function finishJourneyTask() {
+      document.getElementById("journey-task-modal").style.display = "none";
+      const player = jState.turn;
+      const nextTurn = (player === "mr") ? "mrs" : "mr";
+
+      jState.hasRolled = false;
+      jState.turn = nextTurn;
+      document.getElementById("j-status-text").textContent = `Task completed! Turn passed to ${getNickname(nextTurn)}.`;
+      await syncJourneyState();
+
+      if (jState.mode === "ai" && jState.turn === "mrs" && !jState.winner) {
+        setTimeout(triggerJourneyAITurn, 900);
+      }
+    }
+
+    async function triggerJourneyAITurn() {
+      if (jState.turn !== "mrs" || jState.hasRolled || isJMoving || jState.winner) return;
+      await rollJourneyDice();
+      setTimeout(async () => {
+        if (document.getElementById("journey-task-modal").style.display === "flex") {
+          finishJourneyTask();
+        }
+      }, 2400);
+    }
+
+    function triggerJourneyVictory(winner) {
+      jState.winner = winner;
+      SoundFX.playVictory();
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+
+      const loser = (winner === "mr") ? "mrs" : "mr";
+      document.getElementById("victory-winner-title").textContent = `🏆 ${getNickname(winner)} Conquered the Climax!`;
+      document.getElementById("victory-winner-reward").textContent = `Congratulations ${getNickname(winner)}! You finished all boxes.\n\n🔥 Victor Reward: ${getNickname(loser)} surrenders bedroom control tonight with a relaxing 20-minute massage!`;
+      document.getElementById("victory-climax-modal").style.display = "flex";
+      syncJourneyState();
+    }
+
+    function resetJourneyGame(ask = true) {
+      if (ask && !confirm("Restart this intimate journey?")) return;
+      document.getElementById("victory-climax-modal").style.display = "none";
+      document.getElementById("journey-task-modal").style.display = "none";
+      document.getElementById("journey-play-card").style.display = "none";
+      document.getElementById("journey-setup-card").style.display = "block";
+    }
+
+    async function syncJourneyState() {
+      renderJourneyUI();
+      if (isFirebaseReady && jState.mode === "online") {
+        try {
+          await db.collection("system").doc("journey_game_live").set(jState);
+        } catch(e){}
+      }
+      localStorage.setItem("vansh_journey_game_live", JSON.stringify(jState));
+      gamesBroadcast.postMessage({ type: "journey_sync", state: jState });
+    }
+
+    /* ==========================================================================
+       GAME 2: SPIN THE BOTTLE LOGIC
+       ========================================================================== */
+    let bottleDeg = 0;
+    let isSpinning = false;
+    let bIntensity = "romantic";
+
+    const bDaresRomance = [
+      "Give your partner a 20-second slow passionate kiss.",
+      "Kiss every part of their face while looking into their eyes.",
+      "Whisper the single sweetest memory you share together.",
+      "Give a gentle 1-minute hand and finger massage."
+    ];
+    const bDaresSpicy = [
+      "Gently bite your partner's lower lip during a 30-second kiss.",
+      "Whisper your deepest fantasy directly in their ear.",
+      "Give a sensual neck and collarbone massage with warm breath.",
+      "Remove your shirt and give a 30-second bare-skin hug."
+    ];
+
+    function initBottleGame() {}
+    function setBottleMode(m) {
+      bIntensity = m;
+      document.getElementById("btn-bottle-rom").classList.toggle("active", m === "romantic");
+      document.getElementById("btn-bottle-spicy").classList.toggle("active", m === "spicy");
+    }
+
+    function spinBottle() {
+      if (isSpinning) return;
+      isSpinning = true;
+      document.getElementById("bottle-result-box").style.display = "none";
+
+      const added = 1080 + Math.floor(Math.random() * 720);
+      bottleDeg += added;
+      document.getElementById("bottle-svg-elem").style.transform = `rotate(${bottleDeg}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        const norm = bottleDeg % 360;
+        const person = (norm > 90 && norm < 270) ? getNickname("mrs") : getNickname("mr");
+        const list = (bIntensity === "spicy") ? bDaresSpicy : bDaresRomance;
+        const dare = list[Math.floor(Math.random() * list.length)];
+
+        document.getElementById("bottle-winner-person").textContent = `${person}'s Dare!`;
+        document.getElementById("bottle-task-desc").textContent = dare;
+        document.getElementById("bottle-result-box").style.display = "block";
+        SoundFX.playPopup();
+      }, 3200);
+    }
+    function acceptBottleDare() {
+      document.getElementById("bottle-result-box").style.display = "none";
+      alert("Dare fulfilled with love! ❤️");
+    }
+
+    /* ==========================================================================
+       GAME 3: TRUTH OR DARE LOGIC
+       ========================================================================== */
+    let tdCurMode = "romantic";
+    const tdTruthsList = {
+      romantic: ["What was the exact moment you realized you loved me?", "What song always reminds you of us?"],
+      spicy: ["What outfit of mine drives you completely crazy?", "What is your secret fantasy?"],
+      deep: ["What makes you feel most loved and appreciated by me?", "What is your biggest dream for us?"]
+    };
+    const tdDaresList = {
+      romantic: ["Give partner a 20-second hug feeling each other's heartbeat.", "Look into partner's eyes for 60s."],
+      spicy: ["Give partner a slow kiss on the neck for 30s.", "Remove shirt and cuddle bare-chested."],
+      deep: ["Confess one thing you rarely tell anyone else.", "Make a 2-line love promise for forever."]
+    };
+
+    function initTruthDareGame() {}
+    function setTDMode(m) {
+      tdCurMode = m;
+      ['rom', 'spicy', 'deep'].forEach(id => document.getElementById(`td-b-${id}`).classList.remove("active"));
+      document.getElementById(`td-b-${m === 'romantic' ? 'rom' : m}`).classList.add("active");
+    }
+    function drawTDCard(type) {
+      const list = (type === "truth") ? (tdTruthsList[tdCurMode] || tdTruthsList.romantic) : (tdDaresList[tdCurMode] || tdDaresList.romantic);
+      const text = list[Math.floor(Math.random() * list.length)];
+      document.getElementById("td-card-badge").textContent = (type === "truth") ? "💬 TRUTH" : "🔥 DARE";
+      document.getElementById("td-card-text").textContent = text;
+      document.getElementById("td-inner-card").classList.add("flipped");
+      SoundFX.playPopup();
+    }
+    function toggleTDFlip() {
+      document.getElementById("td-inner-card").classList.toggle("flipped");
+    }
+    function markTDDone() {
+      alert("Completed with love! ❤️");
+      toggleTDFlip();
+    }
+
+    /* ==========================================================================
+       GAME 4: NEVER HAVE I EVER LOGIC
+       ========================================================================== */
+    let nhieIdx = 0;
+    const nhieDeck = [
+      "Never have I ever had a sexy daydream about you while working.",
+      "Never have I ever stalked our old chat messages and smiled like an idiot.",
+      "Never have I ever looked at you sleeping and felt overwhelmed by how much I love you.",
+      "Never have I ever wanted you to pull me in for a sudden kiss in public."
+    ];
+    let nhieVoteMap = { mr: null, mrs: null };
+
+    function initNHIEGame() {
+      document.getElementById("nhie-q-text").textContent = nhieDeck[nhieIdx % nhieDeck.length];
+    }
+    function nextNHIECard() {
+      nhieIdx++;
+      document.getElementById("nhie-q-text").textContent = nhieDeck[nhieIdx % nhieDeck.length];
+      document.getElementById("nhie-results-box").style.display = "none";
+      nhieVoteMap = { mr: null, mrs: null };
+    }
+    function voteNHIE(choice) {
+      nhieVoteMap.mr = choice;
+      nhieVoteMap.mrs = (choice === "have") ? "have" : "havenot"; // Demo reveal
+      document.getElementById("nhie-results-box").style.display = "block";
+      document.getElementById("nhie-mr-ans").innerHTML = `<strong>${getNickname("mr")}:</strong> ${choice === 'have' ? '🙈 I Have!' : '😇 Never'}`;
+      document.getElementById("nhie-mrs-ans").innerHTML = `<strong>${getNickname("mrs")}:</strong> ${nhieVoteMap.mrs === 'have' ? '🙈 I Have!' : '😇 Never'}`;
+      SoundFX.playPopup();
+    }
+
+    /* ==========================================================================
+       GAME 5: WOULD YOU RATHER LOGIC
+       ========================================================================== */
+    let wyrIdx = 0;
+    const wyrDeck = [
+      { a: "A spontaneous midnight long drive with our favorite playlist", b: "Cooking candlelit dinner together with slow dancing" },
+      { a: "Waking up to slow, uninterrupted neck kisses", b: "Falling asleep wrapped tight in each other's arms" },
+      { a: "A private beach cottage with zero Wi-Fi for a week", b: "A luxury city rooftop suite overlooking night lights" }
+    ];
+    function initWYRGame() {
+      const q = wyrDeck[wyrIdx % wyrDeck.length];
+      document.getElementById("wyr-text-a").textContent = q.a;
+      document.getElementById("wyr-text-b").textContent = q.b;
+      document.getElementById("wyr-match-box").style.display = "none";
+    }
+    function nextWYRCard() {
+      wyrIdx++;
+      initWYRGame();
+    }
+    function voteWYR(pick) {
+      document.getElementById("wyr-match-box").style.display = "block";
+      document.getElementById("wyr-mr-pick").innerHTML = `<strong>${getNickname("mr")}:</strong> Option ${pick}`;
+      document.getElementById("wyr-mrs-pick").innerHTML = `<strong>${getNickname("mrs")}:</strong> Option ${pick}`;
+      document.getElementById("wyr-verdict").textContent = "100% MATCH! Great hearts beat alike ❤️";
+      SoundFX.playVictory();
+    }
+
+    // Init Page
+    window.addEventListener("DOMContentLoaded", () => {
+      buildJourneyGrid(25);
+    });
+  </script>
+</body>
+</html>
+

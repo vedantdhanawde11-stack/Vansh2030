@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vansh admin panel • Vansh 2030</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --primary: #0F172A;
+      --accent: #E11D48;
+      --text: #0F172A;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --danger: #EF4444;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --shadow: 0 4px 20px -2px rgba(0,0,0,0.06);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 70px;
+      min-height: 100vh;
+    }
+    .header {
+      background: #FFF;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 17px;
+    }
+    .main-wrap {
+      max-width: 960px;
+      margin: 16px auto;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 4-PAGE NAVIGATION TABS */
+    .admin-nav-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 6px;
+      box-shadow: var(--shadow);
+    }
+    .admin-tab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 6px;
+      border-radius: 14px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .admin-tab-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+    }
+
+    .admin-page {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.25s ease;
+    }
+    .admin-page.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    
+    .pass-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-clean {
+      width: 100%;
+      padding: 10px 42px 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 13.5px;
+      outline: none;
+      transition: 0.2s;
+      background: #FFF;
+    }
+    .input-clean:focus {
+      border-color: var(--accent);
+    }
+    .eye-toggle-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+    .form-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: 0.15s;
+    }
+    .btn-primary { background: var(--text); color: #FFF; }
+    .btn-primary:hover { background: #334155; }
+    .btn-secondary { background: #F1F5F9; color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: #FEE2E2; color: var(--danger); border: 1px solid #FECACA; }
+    .btn-danger-solid { background: var(--danger); color: #FFF; }
+    .btn-full { width: 100%; }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .theme-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: #FFF;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .theme-chip.active {
+      border-color: var(--text);
+      background: #F8FAFC;
+    }
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .list-scroll {
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      font-size: 12.5px;
+    }
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0F172A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .login-box {
+      background: #FFF;
+      border-radius: 24px;
+      padding: 32px 24px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0F172A;
+      color: #FFF;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 99999;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- AUTHENTICATION OVERLAY (Aaraved@2503) -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div style="font-size:36px; margin-bottom:8px;">🔒</div>
+      <h2 style="font-size:20px; font-weight:900;">Vansh admin panel</h2>
+      <p style="font-size:12px; color:var(--muted); margin:4px 0 16px;">Vansh 2030 Master Security Access</p>
+      
+      <div class="pass-input-wrapper" style="margin-bottom:14px;">
+        <input type="password" id="admin-pass-input" class="input-clean" placeholder="Enter Admin Password" onkeydown="if(event.key==='Enter')authenticateAdmin()">
+        <button type="button" class="eye-toggle-btn" onclick="togglePassVisibility('admin-pass-input', 'admin-eye-icon')">
+          <span class="material-icons" id="admin-eye-icon" style="font-size:18px;">visibility</span>
+        </button>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="authenticateAdmin()">Unlock Admin Control</button>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="logo-badge">
+      <span class="material-icons" style="color:var(--accent);">admin_panel_settings</span>
+      <span>Vansh admin panel</span>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-secondary" onclick="exportAdminFullBackup()"><span class="material-icons" style="font-size:16px;">download</span> Backup (.JSON)</button>
+      <button class="btn btn-danger" onclick="adminLogout()"><span class="material-icons" style="font-size:16px;">lock</span> Lock</button>
+    </div>
+  </header>
+
+  <main class="main-wrap">
+    <!-- 4-PAGE TAB SELECTOR BAR -->
+    <nav class="admin-nav-bar">
+      <button class="admin-tab-btn active" id="tab-btn-home" onclick="showAdminPage('home')">
+        <span class="material-icons" style="font-size:18px;">home</span>
+        <span>Home</span>
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-profile" onclick="showAdminPage('profile')">
+        <span class="material-icons" style="font-size:18px;">manage_accounts</span>
+        <span>Profile & Chat</span>
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-fund" onclick="showAdminPage('fund')">
+        <span class="material-icons" style="font-size:18px;">savings</span>
+        <span>Fund & Saving</span>
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-settings" onclick="showAdminPage('settings')">
+        <span class="material-icons" style="font-size:18px;">settings</span>
+        <span>Over All Setting</span>
+      </button>
+    </nav>
+
+    <!-- ==========================================================================
+         PAGE 1: HOME (ENTRANCE MEDIA & COUNTDOWN WITH COMPLETED EVENT)
+         ========================================================================== -->
+    <div class="admin-page active" id="page-home">
+      <!-- 1. ENTRANCE IMAGE & AUDIO -->
+      <div class="card" style="border-top: 5px solid #059669;">
+        <div class="card-title"><span class="material-icons" style="color:#059669;">music_note</span> Entrance Image & Audio on Unlock</div>
+        <p class="card-desc">Streams pleasant audio & shows greeting banner when either partner enters the app.</p>
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">MP3 / Audio File</label>
+            <input type="text" id="adm-song-url" class="input-clean" placeholder="Audio stream URL or choose from mobile below">
+            <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+              <label class="btn btn-secondary" style="font-size:11.5px; cursor:pointer;">
+                <span class="material-icons" style="font-size:15px;">folder_open</span> Choose Audio from Mobile
+                <input type="file" id="adm-song-file" accept="audio/*" hidden onchange="handleSongFileUpload(this)">
+              </label>
+              <span id="adm-song-filename" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Entrance Image (Optional Banner)</label>
+            <input type="text" id="adm-entrance-img" class="input-clean" placeholder="Image URL or choose from mobile">
+            <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+              <label class="btn btn-secondary" style="font-size:11.5px; cursor:pointer;">
+                <span class="material-icons" style="font-size:15px;">photo_library</span> Choose Image
+                <input type="file" id="adm-entrance-img-file" accept="image/*" hidden onchange="handleEntranceImgUpload(this)">
+              </label>
+              <img id="adm-entrance-preview" src="" style="width:36px; height:36px; border-radius:8px; object-fit:cover; display:none; border:1px solid var(--border);">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Volume: <span id="vol-lbl">70%</span></label>
+          <input type="range" id="adm-song-vol" min="0" max="1" step="0.05" value="0.7" style="width:100%; margin-top:4px;" oninput="document.getElementById('vol-lbl').textContent=Math.round(this.value*100)+'%'">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700;">
+            <input type="checkbox" id="adm-song-enabled" checked> Auto-play on unlock
+          </label>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary" onclick="previewWelcomeSong()"><span class="material-icons">play_arrow</span> Preview</button>
+            <button class="btn btn-primary" onclick="saveWelcomeSong()"><span class="material-icons">save</span> Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. COUNTDOWN WITH IMAGE & AUDIO & COMPLETED EVENT -->
+      <div class="card" style="border-top: 5px solid #10B981;">
+        <div class="card-title"><span class="material-icons" style="color:#10B981;">timer</span> Countdowns (Image + Audio + Completed Event)</div>
+        <p class="card-desc">When a countdown finishes, it shows in the app with its attached image and plays its song until completion.</p>
+        
+        <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px;">
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Countdown Title</label><input type="text" id="adm-cd-title" class="input-clean" placeholder="Our Special Anniversary"></div>
+            <div class="form-group"><label class="form-label">Target Date & Time</label><input type="datetime-local" id="adm-cd-date" class="input-clean"></div>
+          </div>
+          
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Celebration Audio (Plays when completed)</label>
+              <input type="text" id="adm-cd-song" class="input-clean" placeholder="Audio stream or choose from mobile">
+              <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
+                <label class="btn btn-secondary" style="font-size:11px; cursor:pointer;">
+                  <span class="material-icons" style="font-size:14px;">library_music</span> Choose Audio
+                  <input type="file" id="adm-cd-audio-file" accept="audio/*" hidden onchange="handleCdAudioFileUpload(this)">
+                </label>
+                <span id="adm-cd-audio-filename" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px;"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Celebration Image (Shown when completed)</label>
+              <input type="text" id="adm-cd-img" class="input-clean" placeholder="Image URL or choose from mobile">
+              <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
+                <label class="btn btn-secondary" style="font-size:11px; cursor:pointer;">
+                  <span class="material-icons" style="font-size:14px;">photo_library</span> Choose Image
+                  <input type="file" id="adm-cd-img-file" accept="image/*" hidden onchange="handleCdImgFileUpload(this)">
+                </label>
+                <img id="adm-cd-img-preview" src="" style="width:34px; height:34px; border-radius:6px; object-fit:cover; display:none; border:1px solid var(--border);">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="previewCountdownSong()">▶ Preview Audio</button>
+            </div>
+            <button class="btn btn-primary" onclick="addCountdownItem()"><span class="material-icons">add</span> Add Countdown</button>
+          </div>
+        </div>
+
+        <div class="list-scroll" id="adm-countdown-list"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         PAGE 2: PROFILE & CHAT (NICKNAMES, PASSWORDS WITH EYE, CIRCLE DPS, CHAT)
+         ========================================================================== -->
+    <div class="admin-page" id="page-profile">
+      <!-- 1. PROFILES & CIRCLE DPS & PASSWORDS -->
+      <div class="card" style="border-top: 5px solid #7C3AED;">
+        <div class="card-title"><span class="material-icons" style="color:#7C3AED;">manage_accounts</span> User Profiles, Passwords & Circle DPs</div>
+        <p class="card-desc">Edit nicknames, circular avatars, and secret passwords. Passwords never show plain text by default.</p>
+        
+        <div class="grid-2">
+          <!-- Mr's Profile -->
+          <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:14px; padding:14px;">
+            <h4 style="font-size:14px; margin-bottom:10px; color:#0284C7; display:flex; align-items:center; gap:6px;">
+              <span class="material-icons" style="font-size:18px;">account_circle</span> Mr's Profile
+            </h4>
+            <div class="form-group"><label class="form-label">Nickname</label><input type="text" id="adm-name-mr" class="input-clean" value="Mr"></div>
+            
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="pass-input-wrapper">
+                <input type="password" id="adm-pass-mr" class="input-clean" value="Vedh1234">
+                <button type="button" class="eye-toggle-btn" onclick="togglePassVisibility('adm-pass-mr', 'eye-mr')">
+                  <span class="material-icons" id="eye-mr" style="font-size:18px;">visibility</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Circle DP Image</label>
+              <input type="text" id="adm-dp-mr" class="input-clean" placeholder="Image URL or choose from mobile">
+              <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+                <label class="btn btn-secondary" style="font-size:11px; cursor:pointer;">
+                  <span class="material-icons" style="font-size:15px;">photo_camera</span> Upload Circle Photo
+                  <input type="file" id="adm-dp-mr-file" accept="image/*" hidden onchange="handleDpFileUpload(this, 'mr')">
+                </label>
+                <img id="adm-dp-mr-preview" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; display:none; border:2px solid #0284C7;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Mrs's Profile -->
+          <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:14px; padding:14px;">
+            <h4 style="font-size:14px; margin-bottom:10px; color:#E11D48; display:flex; align-items:center; gap:6px;">
+              <span class="material-icons" style="font-size:18px;">account_circle</span> Mrs's Profile
+            </h4>
+            <div class="form-group"><label class="form-label">Nickname</label><input type="text" id="adm-name-mrs" class="input-clean" value="Mrs"></div>
+            
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="pass-input-wrapper">
+                <input type="password" id="adm-pass-mrs" class="input-clean" value="Aaru1234">
+                <button type="button" class="eye-toggle-btn" onclick="togglePassVisibility('adm-pass-mrs', 'eye-mrs')">
+                  <span class="material-icons" id="eye-mrs" style="font-size:18px;">visibility</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Circle DP Image</label>
+              <input type="text" id="adm-dp-mrs" class="input-clean" placeholder="Image URL or choose from mobile">
+              <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+                <label class="btn btn-secondary" style="font-size:11px; cursor:pointer;">
+                  <span class="material-icons" style="font-size:15px;">photo_camera</span> Upload Circle Photo
+                  <input type="file" id="adm-dp-mrs-file" accept="image/*" hidden onchange="handleDpFileUpload(this, 'mrs')">
+                </label>
+                <img id="adm-dp-mrs-preview" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; display:none; border:2px solid #E11D48;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+          <button class="btn btn-secondary" onclick="resetDpsToDefault()">Reset DPs to Default</button>
+          <button class="btn btn-primary" onclick="saveUserProfiles()"><span class="material-icons">save</span> Save Profiles</button>
+        </div>
+      </div>
+
+      <!-- 2. SHORT REPLIES MANAGER -->
+      <div class="card" style="border-top: 5px solid #0284C7;">
+        <div class="card-title"><span class="material-icons" style="color:#0284C7;">quickreply</span> Quick Short Replies in Chat</div>
+        <p class="card-desc">Add, edit, or remove the one-tap pills shown on the chat typing bar.</p>
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <input type="text" id="adm-new-reply" class="input-clean" placeholder="e.g. I love you ❤️, Miss you tons 🥰">
+          <button class="btn btn-primary" onclick="addQuickReply()"><span class="material-icons">add</span> Add</button>
+        </div>
+        <div class="list-scroll" id="adm-replies-list"></div>
+      </div>
+
+      <!-- 3. CHAT THEMES, WALLPAPER & CLEAR -->
+      <div class="card" style="border-top: 5px solid #F59E0B;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" style="margin-bottom:0;"><span class="material-icons" style="color:#F59E0B;">palette</span> Chat Themes, Wallpaper & Wipe</div>
+          <button class="btn btn-danger" onclick="clearAllChatHistory()"><span class="material-icons" style="font-size:16px;">delete_sweep</span> Clear All Chat</button>
+        </div>
+        <p class="card-desc" style="margin-top:6px;">Select global color palette or upload custom chat wallpaper.</p>
+        
+        <div class="form-group">
+          <label class="form-label">Custom Chat Wallpaper</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <label class="btn btn-secondary" style="font-size:11.5px; cursor:pointer;">
+              <span class="material-icons" style="font-size:15px;">wallpaper</span> Choose Wallpaper Photo
+              <input type="file" id="adm-wallpaper-file" accept="image/*" hidden onchange="handleWallpaperUpload(this)">
+            </label>
+            <button class="btn btn-secondary" onclick="resetChatWallpaper()">Reset to White</button>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label class="form-label">Select 22 Luxury Color Palette</label>
+          <div class="theme-grid" id="theme-swatch-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         PAGE 3: FUND & SAVING (TARGET, SCANNER IMAGE, AUTO CALCULATION, LEDGER)
+         ========================================================================== -->
+    <div class="admin-page" id="page-fund">
+      <div class="card" style="border-top: 5px solid #14B8A6;">
+        <div class="card-title"><span class="material-icons" style="color:#14B8A6;">savings</span> Date Night & Vacation Savings Fund</div>
+        <p class="card-desc">Set target goal, manage payment scanner QR image, and track automatic deposits & debits.</p>
+
+        <!-- Big Highlight Remaining Box -->
+        <div style="background:linear-gradient(135deg, #0F172A, #1E293B); color:white; border-radius:18px; padding:18px; text-align:center; margin-bottom:14px;">
+          <div style="font-size:12px; font-weight:700; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px;">Remaining Amount to Target</div>
+          <div id="adm-fund-big-remain" style="font-size:32px; font-weight:900; color:#2DD4BF; margin:6px 0;">₹50,000</div>
+          <div style="font-size:12px; color:#E2E8F0;" id="adm-fund-sub-metrics">Total Goal: ₹50,000 • Saved: ₹0 (0%)</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Savings Target Goal (₹)</label><input type="number" id="adm-fund-goal" class="input-clean" value="50000" oninput="recalcFundMath()"></div>
+          <div class="form-group"><label class="form-label">Current Saved Total (₹)</label><input type="number" id="adm-fund-curr" class="input-clean" value="0" oninput="recalcFundMath()"></div>
+        </div>
+
+        <!-- Add or Debit Transaction -->
+        <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:14px;">
+          <h4 style="font-size:13px; font-weight:800; color:#0F172A; margin-bottom:8px;">Add Deposit or Debit Money</h4>
+          <div class="grid-2">
+            <input type="number" id="adm-trans-amount" class="input-clean" placeholder="Amount (e.g. 2000)">
+            <select id="adm-trans-type" class="input-clean">
+              <option value="add">Deposit (+ Add Money)</option>
+              <option value="debit">Debit (- Deduct Spent Money)</option>
+            </select>
+          </div>
+          <div class="grid-2" style="margin-top:8px;">
+            <select id="adm-trans-by" class="input-clean">
+              <option value="Mr">Contributed by Mr</option>
+              <option value="Mrs">Contributed by Mrs</option>
+              <option value="Joint">Together / Joint</option>
+            </select>
+            <input type="text" id="adm-trans-note" class="input-clean" placeholder="Purpose (e.g. Dinner, Hotel deposit)">
+          </div>
+          <button class="btn btn-primary btn-full" style="margin-top:8px;" onclick="addFundTransaction()"><span class="material-icons">add_circle</span> Record & Auto-Calculate</button>
+        </div>
+
+        <!-- Scanner QR Code Image -->
+        <div class="form-group">
+          <label class="form-label">Scanner QR Image (Change, Add, Remove, Replace)</label>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <label class="btn btn-secondary" style="font-size:11.5px; cursor:pointer;">
+              <span class="material-icons" style="font-size:15px;">qr_code_scanner</span> Upload Scanner QR Image
+              <input type="file" id="adm-qr-file" accept="image/*" hidden onchange="handleQRUpload(this)">
+            </label>
+            <button class="btn btn-secondary" onclick="removeScannerImage()">Remove QR</button>
+            <img id="adm-qr-preview" src="" style="width:42px; height:42px; border-radius:8px; object-fit:contain; display:none; border:1px solid var(--border);">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button class="btn btn-primary" onclick="saveFundSettings()"><span class="material-icons">save</span> Save Fund Settings</button>
+        </div>
+
+        <div style="margin-top:14px;">
+          <label class="form-label">Full Transaction History Ledger</label>
+          <div class="list-scroll" id="adm-fund-ledger"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         PAGE 4: OVER ALL SETTING (GAMES CODE MANAGER & FULL FACTORY RESET)
+         ========================================================================== -->
+    <div class="admin-page" id="page-settings">
+      <!-- 1. DYNAMIC GAME CODE & TARGET MANAGER -->
+      <div class="card" style="border-top: 5px solid #8B5CF6;">
+        <div class="card-title"><span class="material-icons" style="color:#8B5CF6;">sports_esports</span> Dynamic Game Code & Target Manager</div>
+        <p class="card-desc">Edit, replace, or upload new custom code files for any of the 5 couple games. The user app will run your new code dynamically!</p>
+
+        <div class="form-group">
+          <label class="form-label">Select Game Slot to Edit / Replace Code</label>
+          <select id="adm-game-select" class="input-clean" onchange="loadSelectedGameCode()">
+            <option value="game_1">Game 1: Intimate Couple Journey (Replaces Ludo)</option>
+            <option value="game_2">Game 2: Adult Spin the Bottle</option>
+            <option value="game_3">Game 3: Couple Truth or Dare</option>
+            <option value="game_4">Game 4: Never Have I Ever</option>
+            <option value="game_5">Game 5: Would You Rather?</option>
+          </select>
+        </div>
+
+        <!-- Upload File -->
+        <div class="form-group">
+          <label class="form-label">Upload New Game Code File (.html, .js, .txt)</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <label class="btn btn-secondary" style="font-size:11.5px; cursor:pointer;">
+              <span class="material-icons" style="font-size:15px;">upload_file</span> Choose Code File from Mobile
+              <input type="file" id="adm-game-code-file" accept=".html,.js,.txt" hidden onchange="handleGameCodeFileUpload(this)">
+            </label>
+            <span id="adm-game-file-status" style="font-size:11px; color:var(--muted);"></span>
+          </div>
+        </div>
+
+        <!-- Target URL Option -->
+        <div class="form-group">
+          <label class="form-label">Or External Target URL (Optional)</label>
+          <input type="text" id="adm-game-target-url" class="input-clean" placeholder="https://example.com/custom_game.html (optional)">
+        </div>
+
+        <!-- Raw Code Editor -->
+        <div class="form-group">
+          <label class="form-label">Raw Game HTML / JavaScript Code</label>
+          <textarea id="adm-game-code-editor" class="input-clean" rows="8" placeholder="Paste your HTML/JS code here..." style="font-family:monospace; font-size:12px;"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <button class="btn btn-secondary" onclick="resetSelectedGameToDefault()">Reset to Default Game Code</button>
+          <button class="btn btn-primary" onclick="saveCustomGameCode()"><span class="material-icons">save</span> Save & Deploy Game Code</button>
+        </div>
+      </div>
+
+      <!-- 2. GAME STATE RESETS -->
+      <div class="card" style="border-top: 5px solid #0284C7;">
+        <div class="card-title"><span class="material-icons" style="color:#0284C7;">restart_alt</span> Active Game State Resets</div>
+        <p class="card-desc">Reset the current match states, scores, or turn orders across devices.</p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px;">
+          <button class="btn btn-secondary" onclick="resetAdminGameState('game_1')">Reset Journey</button>
+          <button class="btn btn-secondary" onclick="resetAdminGameState('game_2')">Reset Bottle</button>
+          <button class="btn btn-secondary" onclick="resetAdminGameState('game_3')">Reset Truth/Dare</button>
+          <button class="btn btn-secondary" onclick="resetAdminGameState('game_4')">Reset NHIE</button>
+          <button class="btn btn-secondary" onclick="resetAdminGameState('game_5')">Reset WYR</button>
+        </div>
+        <button class="btn btn-secondary btn-full" style="margin-top:10px; color:#D97706;" onclick="resetAllGamesState()">Reset All 5 Games to Clean State</button>
+      </div>
+
+      <!-- 3. SELECTIVE DELETES & FACTORY RESET -->
+      <div class="card" style="border-top: 5px solid var(--danger); background: #FFF5F5;">
+        <div class="card-title" style="color:#991B1B;"><span class="material-icons" style="color:var(--danger);">warning</span> Danger Zone: Data Wipes & Restart</div>
+        <p class="card-desc" style="color:#7F1D1D;">Selectively clear specific sections or perform a full factory reset. Requires password: <strong>Aaraved@2503</strong>.</p>
+        
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-secondary" style="color:var(--danger); border-color:#FECACA;" onclick="clearAllChatHistory()"><span class="material-icons">delete_sweep</span> Wipe Chat Only</button>
+          <button class="btn btn-secondary" style="color:var(--danger); border-color:#FECACA;" onclick="clearAllVaultMemories()"><span class="material-icons">auto_stories</span> Wipe Vault Only</button>
+          <button class="btn btn-danger-solid" style="padding:10px 22px; font-weight:800;" onclick="triggerMasterFactoryReset()"><span class="material-icons">delete_forever</span> Factory Reset All App Data</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast">Action Saved</div>
+
+  <!-- FIREBASE SCRIPTS -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const ADMIN_PASS = "Aaraved@2503";
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjaABrdQFOn7Vo5ncRvtebmtxqpo0wj5E",
+      authDomain: "vansh-2030.firebaseapp.com",
+      projectId: "vansh-2030",
+      storageBucket: "vansh-2030.firebasestorage.app",
+      messagingSenderId: "384646112899",
+      appId: "1:384646112899:web:e3de75e2963f43a25a1db6",
+      measurementId: "G-DFND2NT5LL"
+    };
+
+    let db = null;
+    let isFirebaseReady = false;
+    let previewAudio = null;
+
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      isFirebaseReady = true;
+    } catch(e) {
+      console.warn("Firebase offline or in local fallback:", e);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      setTimeout(() => { t.style.display = "none"; }, 2500);
+    }
+
+    // EYE TOGGLE VISIBILITY
+    function togglePassVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === "password") {
+        input.type = "text";
+        icon.textContent = "visibility_off";
+      } else {
+        input.type = "password";
+        icon.textContent = "visibility";
+      }
+    }
+
+    function authenticateAdmin() {
+      const p = document.getElementById("admin-pass-input").value;
+      if (p === ADMIN_PASS) {
+        document.getElementById("login-overlay").style.display = "none";
+        sessionStorage.setItem("adm_auth", "1");
+        loadAllAdminData();
+      } else {
+        alert("Incorrect Admin Password.");
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem("adm_auth");
+      location.reload();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      if (sessionStorage.getItem("adm_auth") === "1") {
+        document.getElementById("login-overlay").style.display = "none";
+        loadAllAdminData();
+      }
+    });
+
+    // 4-PAGE TAB SWITCHER
+    function showAdminPage(pageId) {
+      document.querySelectorAll(".admin-page").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("active"));
+
+      const target = document.getElementById(`page-${pageId}`);
+      const btn = document.getElementById(`tab-btn-${pageId}`);
+      if (target) target.classList.add("active");
+      if (btn) btn.classList.add("active");
+    }
+
+    // FILE PICKERS
+    function handleSongFileUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        document.getElementById("adm-song-filename").textContent = file.name;
+        const rd = new FileReader();
+        rd.onload = e => {
+          document.getElementById("adm-song-url").value = e.target.result;
+          showToast("Entrance Audio loaded!");
+        };
+        rd.readAsDataURL(file);
+      }
+    }
+
+    let entranceImageData = "";
+    function handleEntranceImgUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const rd = new FileReader();
+        rd.onload = e => {
+          entranceImageData = e.target.result;
+          document.getElementById("adm-entrance-img").value = entranceImageData;
+          const p = document.getElementById("adm-entrance-preview");
+          if (p) { p.src = entranceImageData; p.style.display = "block"; }
+          showToast("Entrance image loaded!");
+        };
+        rd.readAsDataURL(file);
+      }
+    }
+
+    function handleDpFileUpload(input, target) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const rd = new FileReader();
+        rd.onload = e => {
+          const dataUrl = e.target.result;
+          document.getElementById(`adm-dp-${target}`).value = dataUrl;
+          const preview = document.getElementById(`adm-dp-${target}-preview`);
+          if (preview) {
+            preview.src = dataUrl;
+            preview.style.display = "block";
+          }
+          showToast(`Circle DP for ${target.toUpperCase()} loaded!`);
+        };
+        rd.readAsDataURL(file);
+      }
+    }
+
+    function handleCdAudioFileUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        document.getElementById("adm-cd-audio-filename").textContent = file.name;
+        const rd = new FileReader();
+        rd.onload = e => {
+          document.getElementById("adm-cd-song").value = e.target.result;
+          showToast("Celebration audio loaded!");
+        };
+        rd.readAsDataURL(file);
+      }
+    }
+
+    let cdImageData = "";
+    function handleCdImgFileUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const rd = new FileReader();
+        rd.onload = e => {
+          cdImageData = e.target.result;
+          document.getElementById("adm-cd-img").value = cdImageData;
+          const preview = document.getElementById("adm-cd-img-preview");
+          if (preview) {
+            preview.src = cdImageData;
+            preview.style.display = "block";
+          }
+          showToast("Celebration photo loaded!");
+        };
+        rd.readAsDataURL(file);
+      }
+    }
+
+    // 1. HOME: ENTRANCE MEDIA
+    function previewWelcomeSong() {
+      const url = document.getElementById("adm-song-url").value.trim();
+      if (!url) { alert("Enter song URL or choose file first."); return; }
+      if (previewAudio) { previewAudio.pause(); previewAudio = null; return; }
+      previewAudio = new Audio(url);
+      previewAudio.volume = parseFloat(document.getElementById("adm-song-vol").value);
+      previewAudio.play().then(() => showToast("Playing audio... (tap again to stop)")).catch(e => alert(e.message));
+    }
+
+    async function saveWelcomeSong() {
+      const data = {
+        url: document.getElementById("adm-song-url").value.trim(),
+        imageUrl: document.getElementById("adm-entrance-img").value.trim() || entranceImageData,
+        volume: parseFloat(document.getElementById("adm-song-vol").value),
+        enabled: document.getElementById("adm-song-enabled").checked,
+        updatedAt: Date.now()
+      };
+      if (isFirebaseReady) await db.collection("system").doc("welcome_song").set(data);
+      localStorage.setItem("vansh_welcome_song", JSON.stringify(data));
+      showToast("Entrance media settings saved!");
+    }
+
+    // 2. COUNTDOWNS WITH IMAGE + AUDIO + FINISH EVENT
+    function previewCountdownSong() {
+      const url = document.getElementById("adm-cd-song").value.trim();
+      if (!url) { alert("Enter or choose celebration audio first."); return; }
+      if (previewAudio) { previewAudio.pause(); previewAudio = null; return; }
+      previewAudio = new Audio(url);
+      previewAudio.play().then(() => showToast("Playing celebration audio...")).catch(e => alert(e.message));
+    }
+
+    function loadCountdowns() {
+      if (isFirebaseReady) {
+        db.collection("system").doc("countdowns").onSnapshot(doc => {
+          renderCountdowns(doc.exists ? (doc.data().items || []) : []);
+        });
+      } else {
+        renderCountdowns(JSON.parse(localStorage.getItem("vansh_countdowns") || "[]"));
+      }
+    }
+
+    function renderCountdowns(items) {
+      const box = document.getElementById("adm-countdown-list");
+      box.innerHTML = "";
+      if (items.length === 0) { box.innerHTML = "<p style='color:var(--muted); font-size:12px;'>No countdowns added.</p>"; return; }
+      items.forEach(c => {
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(c.title)}</strong><br>
+            <small style="color:var(--muted);">${c.date} ${c.songUrl ? '• 🎵 Audio Attached' : ''} ${c.imageUrl ? '• 🖼️ Image Attached' : ''}</small>
+          </div>
+          <button class="btn btn-danger" style="font-size:11px; padding:3px 8px;" onclick="deleteCountdown('${c.id}')">Delete</button>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    async function addCountdownItem() {
+      const title = document.getElementById("adm-cd-title").value.trim();
+      const date = document.getElementById("adm-cd-date").value;
+      const songUrl = document.getElementById("adm-cd-song").value.trim();
+      const imageUrl = document.getElementById("adm-cd-img").value.trim() || cdImageData;
+
+      if (!title || !date) { alert("Title and date required."); return; }
+
+      const raw = JSON.parse(localStorage.getItem("vansh_countdowns") || "[]");
+      raw.push({ id: `cd_${Date.now()}`, title, date, songUrl, imageUrl, createdBy: "admin" });
+      localStorage.setItem("vansh_countdowns", JSON.stringify(raw));
+      if (isFirebaseReady) await db.collection("system").doc("countdowns").set({ items: raw });
+
+      document.getElementById("adm-cd-title").value = "";
+      document.getElementById("adm-cd-date").value = "";
+      document.getElementById("adm-cd-song").value = "";
+      document.getElementById("adm-cd-img").value = "";
+      showToast("Countdown added with celebration media!");
+    }
+
+    async function deleteCountdown(id) {
+      if (confirm("Delete countdown?")) {
+        let raw = JSON.parse(localStorage.getItem("vansh_countdowns") || "[]");
+        raw = raw.filter(c => c.id !== id);
+        localStorage.setItem("vansh_countdowns", JSON.stringify(raw));
+        if (isFirebaseReady) await db.collection("system").doc("countdowns").set({ items: raw });
+        showToast("Countdown removed!");
+      }
+    }
+
+    // 3. PROFILE & CHAT
+    async function saveUserProfiles() {
+      const mrName = document.getElementById("adm-name-mr").value.trim() || "Mr";
+      const mrsName = document.getElementById("adm-name-mrs").value.trim() || "Mrs";
+      const mrPass = document.getElementById("adm-pass-mr").value.trim() || "Vedh1234";
+      const mrsPass = document.getElementById("adm-pass-mrs").value.trim() || "Aaru1234";
+      const mrDp = document.getElementById("adm-dp-mr").value.trim();
+      const mrsDp = document.getElementById("adm-dp-mrs").value.trim();
+
+      if (isFirebaseReady) {
+        await db.collection("users").doc("mr").set({ name: mrName, pass: mrPass, dpUrl: mrDp }, { merge: true });
+        await db.collection("users").doc("mrs").set({ name: mrsName, pass: mrsPass, dpUrl: mrsDp }, { merge: true });
+        await db.collection("system").doc("credentials").set({ mr: mrPass, mrs: mrsPass });
+      }
+      localStorage.setItem("vansh_nicknames", JSON.stringify({ mr: mrName, mrs: mrsName }));
+      localStorage.setItem("vansh_passwords", JSON.stringify({ mr: mrPass, mrs: mrsPass }));
+      if (mrDp) localStorage.setItem("dp_mr", mrDp);
+      if (mrsDp) localStorage.setItem("dp_mrs", mrsDp);
+      showToast("User profiles & passwords saved!");
+    }
+
+    function resetDpsToDefault() {
+      document.getElementById("adm-dp-mr").value = "https://api.dicebear.com/7.x/bottts/svg?seed=mr";
+      document.getElementById("adm-dp-mrs").value = "https://api.dicebear.com/7.x/bottts/svg?seed=mrs";
+      saveUserProfiles();
+    }
+
+    // SHORT REPLIES MANAGER
+    const DEFAULT_SHORT_REPLIES = [
+      "I love you so much ❤️",
+      "Missing you tons 🥰",
+      "Reached safely! 🚗",
+      "Call me when free 📞",
+      "Have you eaten? 🍲",
+      "Send a selfie 📸",
+      "Thinking of you 💭"
+    ];
+
+    function loadQuickReplies() {
+      const raw = JSON.parse(localStorage.getItem("vansh_short_replies") || JSON.stringify(DEFAULT_SHORT_REPLIES));
+      renderQuickReplies(raw);
+      if (isFirebaseReady) {
+        db.collection("system").doc("short_replies").onSnapshot(doc => {
+          if (doc.exists && doc.data().items) {
+            localStorage.setItem("vansh_short_replies", JSON.stringify(doc.data().items));
+            renderQuickReplies(doc.data().items);
+          }
+        });
+      }
+    }
+
+    function renderQuickReplies(items) {
+      const box = document.getElementById("adm-replies-list");
+      box.innerHTML = "";
+      items.forEach((txt, idx) => {
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.innerHTML = `
+          <span>${escapeHtml(txt)}</span>
+          <button class="btn btn-danger" style="font-size:10px; padding:2px 8px;" onclick="deleteQuickReply(${idx})">Delete</button>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    async function addQuickReply() {
+      const val = document.getElementById("adm-new-reply").value.trim();
+      if (!val) return;
+      const raw = JSON.parse(localStorage.getItem("vansh_short_replies") || JSON.stringify(DEFAULT_SHORT_REPLIES));
+      raw.push(val);
+      localStorage.setItem("vansh_short_replies", JSON.stringify(raw));
+      if (isFirebaseReady) await db.collection("system").doc("short_replies").set({ items: raw });
+      document.getElementById("adm-new-reply").value = "";
+      renderQuickReplies(raw);
+      showToast("Short reply added!");
+    }
+
+    async function deleteQuickReply(idx) {
+      const raw = JSON.parse(localStorage.getItem("vansh_short_replies") || JSON.stringify(DEFAULT_SHORT_REPLIES));
+      raw.splice(idx, 1);
+      localStorage.setItem("vansh_short_replies", JSON.stringify(raw));
+      if (isFirebaseReady) await db.collection("system").doc("short_replies").set({ items: raw });
+      renderQuickReplies(raw);
+      showToast("Short reply removed!");
+    }
+
+    // 4. THEMES & WALLPAPER
+    const themesList = [
+      { id: "theme-emerald", name: "Royal Emerald", color: "#059669" },
+      { id: "theme-rose", name: "Velvet Rose", color: "#BE185D" },
+      { id: "theme-purple", name: "Amethyst Glam", color: "#7C3AED" },
+      { id: "theme-sky", name: "Azure Breeze", color: "#0284C7" },
+      { id: "theme-amber", name: "Sunset Gold", color: "#D97706" },
+      { id: "theme-slate", name: "Midnight Noir", color: "#334155" },
+      { id: "theme-coral", name: "Tropical Coral", color: "#EA580C" },
+      { id: "theme-mint", name: "Fresh Mint", color: "#10B981" },
+      { id: "theme-blush", name: "Sweet Blush", color: "#F43F5E" },
+      { id: "theme-lavender", name: "Soft Lavender", color: "#8B5CF6" },
+      { id: "theme-teal", name: "Ocean Teal", color: "#0D9488" },
+      { id: "theme-indigo", name: "Deep Indigo", color: "#4F46E5" },
+      { id: "theme-wine", name: "Cabernet Wine", color: "#881337" },
+      { id: "theme-honey", name: "Wild Honey", color: "#CA8A04" },
+      { id: "theme-champagne", name: "Warm Champagne", color: "#B45309" },
+      { id: "theme-peacock", name: "Peacock Blue", color: "#0369A1" },
+      { id: "theme-crimson", name: "Pure Crimson", color: "#DC2626" },
+      { id: "theme-violet", name: "Electric Violet", color: "#9333EA" },
+      { id: "theme-matcha", name: "Calm Matcha", color: "#15803D" },
+      { id: "theme-copper", name: "Rustic Copper", color: "#C2410C" },
+      { id: "theme-cherry", name: "Sweet Cherry", color: "#9F1239" },
+      { id: "theme-purepink", name: "Bubblegum Heart", color: "#EC4899" }
+    ];
+
+    function renderThemes() {
+      const box = document.getElementById("theme-swatch-box");
+      box.innerHTML = "";
+      themesList.forEach(t => {
+        const d = document.createElement("div");
+        d.className = "theme-chip";
+        d.innerHTML = `<span class="color-dot" style="background:${t.color};"></span><span>${t.name}</span>`;
+        d.onclick = async () => {
+          document.querySelectorAll(".theme-chip").forEach(c => c.classList.remove("active"));
+          d.classList.add("active");
+          if (isFirebaseReady) await db.collection("system").doc("app_theme").set({ activeTheme: t.id, updatedAt: Date.now() });
+          localStorage.setItem("vansh_chat_theme", t.id);
+          showToast(`Theme set to ${t.name}!`);
+        };
+        box.appendChild(d);
+      });
+    }
+
+    function handleWallpaperUpload(input) {
+      if (input.files && input.files[0]) {
+        const rd = new FileReader();
+        rd.onload = async e => {
+          const bgUrl = e.target.result;
+          localStorage.setItem("vansh_chat_wallpaper", bgUrl);
+          if (isFirebaseReady) await db.collection("system").doc("chat_wallpaper").set({ url: bgUrl });
+          showToast("Chat wallpaper updated!");
+        };
+        rd.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function resetChatWallpaper() {
+      localStorage.removeItem("vansh_chat_wallpaper");
+      if (isFirebaseReady) db.collection("system").doc("chat_wallpaper").delete();
+      showToast("Wallpaper reset to default white!");
+    }
+
+    // 5. FUND & SAVING
+    let qrImageData = "";
+    function handleQRUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const rd = new FileReader();
+        rd.onload = e => {
+          qrImageData = e.target.result;
+          const preview = document.getElementById("adm-qr-preview");
+          if (preview) {
+            preview.src = qrImageData;
+            preview.style.display = "block";
+          }
+          showToast("QR Image Loaded!");
+        };
+        rd.readAsDataURL(file);
+      }
+    }
+
+    function removeScannerImage() {
+      qrImageData = "";
+      const p = document.getElementById("adm-qr-preview");
+      if (p) p.style.display = "none";
+      showToast("Scanner image removed.");
+    }
+
+    function recalcFundMath() {
+      const goal = parseInt(document.getElementById("adm-fund-goal").value) || 0;
+      const curr = parseInt(document.getElementById("adm-fund-curr").value) || 0;
+      const remain = Math.max(0, goal - curr);
+      const pct = goal > 0 ? Math.min(100, Math.round((curr / goal) * 100)) : 0;
+
+      document.getElementById("adm-fund-big-remain").textContent = `₹${remain.toLocaleString()}`;
+      document.getElementById("adm-fund-sub-metrics").textContent = `Total Goal: ₹${goal.toLocaleString()} • Saved: ₹${curr.toLocaleString()} (${pct}%)`;
+    }
+
+    async function addFundTransaction() {
+      const amt = parseInt(document.getElementById("adm-trans-amount").value);
+      if (!amt || isNaN(amt)) { alert("Enter valid transaction amount."); return; }
+      const type = document.getElementById("adm-trans-type").value; // 'add' or 'debit'
+      const by = document.getElementById("adm-trans-by").value;
+      const note = document.getElementById("adm-trans-note").value.trim() || (type === 'add' ? 'Savings Contribution' : 'Expense/Debit');
+
+      let curr = parseInt(document.getElementById("adm-fund-curr").value) || 0;
+      if (type === "add") curr += amt;
+      else curr = Math.max(0, curr - amt);
+
+      document.getElementById("adm-fund-curr").value = curr;
+      recalcFundMath();
+
+      const transObj = {
+        amount: amt,
+        type,
+        by,
+        note,
+        date: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
+        timestamp: Date.now()
+      };
+
+      const rawLedger = JSON.parse(localStorage.getItem("vansh_fund_ledger") || "[]");
+      rawLedger.unshift(transObj);
+      localStorage.setItem("vansh_fund_ledger", JSON.stringify(rawLedger));
+
+      const fundSettings = {
+        totalSavingsGoal: parseInt(document.getElementById("adm-fund-goal").value) || 50000,
+        currentSaved: curr,
+        contributions: rawLedger
+      };
+      if (qrImageData) fundSettings.scannerImgUrl = qrImageData;
+
+      localStorage.setItem("vansh_savings", JSON.stringify(fundSettings));
+      if (isFirebaseReady) await db.collection("system").doc("savings").set(fundSettings, { merge: true });
+
+      renderFundLedger(rawLedger);
+      document.getElementById("adm-trans-amount").value = "";
+      document.getElementById("adm-trans-note").value = "";
+      showToast(`${type === 'add' ? 'Deposit' : 'Debit'} recorded successfully!`);
+    }
+
+    function renderFundLedger(list) {
+      const box = document.getElementById("adm-fund-ledger");
+      box.innerHTML = "";
+      if (list.length === 0) { box.innerHTML = "<p style='color:var(--muted); font-size:12px;'>No transactions recorded yet.</p>"; return; }
+      list.forEach((c, idx) => {
+        const row = document.createElement("div");
+        row.className = "item-row";
+        const sign = (c.type === 'debit') ? '- ' : '+ ';
+        const color = (c.type === 'debit') ? '#EF4444' : '#10B981';
+        row.innerHTML = `
+          <div>
+            <strong style="color:${color}; font-size:13.5px;">${sign}₹${c.amount.toLocaleString()}</strong> 
+            <span style="font-size:11px; color:#64748B;">by ${c.by}</span><br>
+            <small style="color:var(--muted);">${escapeHtml(c.note || '')} • ${c.date}</small>
+          </div>
+          <button class="btn btn-danger" style="font-size:10px; padding:2px 6px;" onclick="deleteTransaction(${idx})">Delete</button>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    async function deleteTransaction(idx) {
+      if (!confirm("Delete this transaction entry?")) return;
+      const rawLedger = JSON.parse(localStorage.getItem("vansh_fund_ledger") || "[]");
+      const removed = rawLedger.splice(idx, 1)[0];
+      localStorage.setItem("vansh_fund_ledger", JSON.stringify(rawLedger));
+
+      let curr = parseInt(document.getElementById("adm-fund-curr").value) || 0;
+      if (removed) {
+        if (removed.type === 'add') curr = Math.max(0, curr - removed.amount);
+        else curr += removed.amount;
+      }
+      document.getElementById("adm-fund-curr").value = curr;
+      recalcFundMath();
+
+      const fundSettings = {
+        totalSavingsGoal: parseInt(document.getElementById("adm-fund-goal").value) || 50000,
+        currentSaved: curr,
+        contributions: rawLedger
+      };
+      if (isFirebaseReady) await db.collection("system").doc("savings").set(fundSettings, { merge: true });
+      renderFundLedger(rawLedger);
+      showToast("Transaction removed.");
+    }
+
+    async function saveFundSettings() {
+      const goal = parseInt(document.getElementById("adm-fund-goal").value) || 50000;
+      const curr = parseInt(document.getElementById("adm-fund-curr").value) || 0;
+      const data = {
+        totalSavingsGoal: goal,
+        currentSaved: curr,
+        updatedAt: Date.now()
+      };
+      if (qrImageData) data.scannerImgUrl = qrImageData;
+
+      localStorage.setItem("vansh_savings", JSON.stringify(data));
+      if (isFirebaseReady) await db.collection("system").doc("savings").set(data, { merge: true });
+      recalcFundMath();
+      showToast("Fund & Scanner settings saved!");
+    }
+
+    // 6. DYNAMIC GAME CODE & TARGET MANAGER
+    let customGameSlots = {};
+
+    function loadCustomGameSlots() {
+      const raw = JSON.parse(localStorage.getItem("vansh_custom_games") || "{}");
+      customGameSlots = raw;
+      loadSelectedGameCode();
+
+      if (isFirebaseReady) {
+        db.collection("system").doc("game_slots").onSnapshot(doc => {
+          if (doc.exists) {
+            customGameSlots = doc.data();
+            localStorage.setItem("vansh_custom_games", JSON.stringify(customGameSlots));
+            loadSelectedGameCode();
+          }
+        });
+      }
+    }
+
+    function loadSelectedGameCode() {
+      const slot = document.getElementById("adm-game-select").value;
+      const data = customGameSlots[slot] || {};
+      document.getElementById("adm-game-target-url").value = data.targetUrl || "";
+      document.getElementById("adm-game-code-editor").value = data.rawCode || "";
+      document.getElementById("adm-game-file-status").textContent = data.rawCode ? `(Custom Code: ${data.rawCode.length} chars)` : "(Default built-in code active)";
+    }
+
+    function handleGameCodeFileUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        document.getElementById("adm-game-file-status").textContent = `Loaded ${file.name}`;
+        const rd = new FileReader();
+        rd.onload = e => {
+          document.getElementById("adm-game-code-editor").value = e.target.result;
+          showToast(`File ${file.name} loaded into editor!`);
+        };
+        rd.readAsText(file);
+      }
+    }
+
+    async function saveCustomGameCode() {
+      const slot = document.getElementById("adm-game-select").value;
+      const targetUrl = document.getElementById("adm-game-target-url").value.trim();
+      const rawCode = document.getElementById("adm-game-code-editor").value;
+
+      customGameSlots[slot] = {
+        targetUrl,
+        rawCode,
+        updatedAt: Date.now()
+      };
+
+      localStorage.setItem("vansh_custom_games", JSON.stringify(customGameSlots));
+      if (isFirebaseReady) {
+        await db.collection("system").doc("game_slots").set(customGameSlots);
+      }
+      showToast(`Game code for ${slot.toUpperCase()} saved & deployed!`);
+    }
+
+    async function resetSelectedGameToDefault() {
+      const slot = document.getElementById("adm-game-select").value;
+      delete customGameSlots[slot];
+      localStorage.setItem("vansh_custom_games", JSON.stringify(customGameSlots));
+      if (isFirebaseReady) await db.collection("system").doc("game_slots").set(customGameSlots);
+      loadSelectedGameCode();
+      showToast(`Reset ${slot.toUpperCase()} to default built-in code.`);
+    }
+
+    async function resetAdminGameState(slot) {
+      if (!confirm(`Reset active game state for ${slot.toUpperCase()}?`)) return;
+      if (isFirebaseReady) {
+        await db.collection("system").doc(`state_${slot}`).delete();
+      }
+      showToast(`Game state for ${slot.toUpperCase()} reset!`);
+    }
+
+    async function resetAllGamesState() {
+      if (!confirm("Reset active states for all 5 games?")) return;
+      if (isFirebaseReady) {
+        const games = ["game_1", "game_2", "game_3", "game_4", "game_5", "ludo_game", "bottle_game", "nhie_game", "wyr_game"];
+        for (const g of games) {
+          await db.collection("system").doc(g).delete().catch(()=>{});
+        }
+      }
+      showToast("All 5 games reset to clean state!");
+    }
+
+    // 7. FULL FACTORY RESET
+    async function clearAllChatHistory() {
+      if (!confirm("Permanently wipe ALL chat messages for both users?")) return;
+      if (isFirebaseReady) {
+        const snap = await db.collection("messages").get();
+        const batch = db.batch();
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      }
+      localStorage.removeItem("vansh_chat");
+      showToast("All chat history wiped!");
+    }
+
+    async function clearAllVaultMemories() {
+      if (!confirm("Permanently delete ALL vault memories?")) return;
+      if (isFirebaseReady) {
+        const snap = await db.collection("lifetime_memories").get();
+        const batch = db.batch();
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      }
+      localStorage.removeItem("vansh_vault");
+      showToast("All vault memories cleared!");
+    }
+
+    async function triggerMasterFactoryReset() {
+      if (!confirm("🚨 MASTER FACTORY RESET\n\nThis will permanently wipe ALL chat, vault memories, 24h snaps, date fund, countdowns, streaks, and restore default credentials (Mr: Vedh1234, Mrs: Aaru1234).\n\nProceed?")) return;
+      const pass = prompt("Enter Master Admin Password (Aaraved@2503) to confirm:");
+      if (pass !== ADMIN_PASS) { alert("Incorrect password. Reset cancelled."); return; }
+
+      showToast("Executing master factory reset...");
+      if (isFirebaseReady) {
+        const cols = ["messages", "lifetime_memories", "snaps_24h", "calls", "presence", "typing"];
+        for (const col of cols) {
+          const snap = await db.collection(col).get();
+          const batch = db.batch();
+          snap.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+        }
+        await db.collection("system").doc("streaks_v2").set({ currentStreak: 0, bestStreak: 0, dates: {}, lastCompletedDate: null });
+        await db.collection("system").doc("savings").set({ currentSaved: 0, totalSavingsGoal: 50000, scannerImgUrl: "", contributions: [] });
+        await db.collection("system").doc("credentials").set({ mr: "Vedh1234", mrs: "Aaru1234" });
+        await db.collection("users").doc("mr").set({ name: "Mr", pass: "Vedh1234", dpUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=mr" });
+        await db.collection("users").doc("mrs").set({ name: "Mrs", pass: "Aaru1234", dpUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=mrs" });
+        await resetAllGamesState();
+      }
+
+      localStorage.clear();
+      sessionStorage.clear();
+      try {
+        const bc = new BroadcastChannel("vansh_app_sync");
+        bc.postMessage({ type: "factory_reset" });
+      } catch(e){}
+
+      alert("Master factory reset complete! App will now restart.");
+      location.reload();
+    }
+
+    function exportAdminFullBackup() {
+      const backup = {
+        app: "Vansh 2030 Master Admin Backup",
+        date: new Date().toISOString(),
+        chat: JSON.parse(localStorage.getItem("vansh_chat") || "[]"),
+        vault: JSON.parse(localStorage.getItem("vansh_vault") || "[]"),
+        countdowns: JSON.parse(localStorage.getItem("vansh_countdowns") || "[]"),
+        streaks: JSON.parse(localStorage.getItem("vansh_streak_v2") || "{}"),
+        savings: JSON.parse(localStorage.getItem("vansh_savings") || "{}"),
+        customGames: JSON.parse(localStorage.getItem("vansh_custom_games") || "{}")
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `Vansh_2030_Admin_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    }
+
+    function loadAllAdminData() {
+      renderThemes();
+      loadCountdowns();
+      loadQuickReplies();
+      loadCustomGameSlots();
+
+      // Load fund
+      const fund = JSON.parse(localStorage.getItem("vansh_savings") || "{}");
+      if (fund.totalSavingsGoal) document.getElementById("adm-fund-goal").value = fund.totalSavingsGoal;
+      if (fund.currentSaved !== undefined) document.getElementById("adm-fund-curr").value = fund.currentSaved;
+      recalcFundMath();
+      renderFundLedger(JSON.parse(localStorage.getItem("vansh_fund_ledger") || "[]"));
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+  </script>
+</body>
+</html>
+
